@@ -2,10 +2,41 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/styleLogin.css' />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a81368914c.js"></script>
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <img class="wave" src="/images/wave.png">
+    <div class="container">
+      <div class="img"> <!--para la imagen que generare-->
+      </div>
+      <div class="container-login">
+        <form action="/login">
+          <img src="/images/user.png">
+          <h2>Bienvenido</h2>
+          <div class="input-div">
+            <div class="icon">
+              <i class="fas fa-user"></i>
+            </div>
+            <div>
+              <h5>Email</h5>
+              <input class="input" type="email">
+            </div>
+          </div>
+          <div class="input-div">
+            <div class="icon">
+              <i class="fas fa-lock"></i>
+            </div>
+            <div>
+              <h5>Contraseña</h5>
+              <input class="input" type="password">
+            </div>
+          </div>
+          <input type="submit" class="btn" value="Iniciar Sesión">
+        </form>
+
+      </div>
+    </div>
   </body>
 </html>
