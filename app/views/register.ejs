@@ -1,11 +1,41 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-  </body>
+<html lang="es">
+<head>
+    <title>Registro</title>
+    <link rel="stylesheet" href="/stylesheets/styleLogin.css">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap">
+    <script src="https://kit.fontawesome.com/a81368914c.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="login-card">
+        <div class="left-section">
+            <div class="blob-container">
+                <img class="blob" src="/images/blob.svg" alt="Blob">
+                <img class="logo" src="/images/logo.png" alt="Logo">
+            </div>
+        </div>
+        <div class="right-section">
+            <img class="user-icon" src="/images/user.png" alt="User Icon">
+            <form action="/register">
+                <div class="input-div">
+                    <i class="fas fa-user"></i>
+                    <input type="email" placeholder="Email" required>
+                </div>
+                <div class="input-div">
+                  <i class="fas fa-user"></i>
+                  <input type="text" placeholder="Nombre" required>
+              </div>
+                <div class="input-div">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Contraseña" required>
+                </div>
+                <div class="input-div">
+                  <i class="fas fa-lock"></i>
+                  <input type="password" placeholder="Confirmar contraseña" required>
+              </div>
+                <button type="submit" class="btn">Registrar</button>
+            </form>
+        </div>
+    </div>
+</body>
 </html>
