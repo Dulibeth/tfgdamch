@@ -47,7 +47,6 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo del selector de minutos */
 .time-selector {
     display: flex;
     align-items: center;
@@ -76,12 +75,12 @@ body {
     background: #218efc;
 }
 
-/* Micrófono y animación */
+
 .mic-container {
     position: relative;
     width: 120px;
     height: 120px;
-    margin: 20px auto 30px;  /* Más espacio hacia abajo */
+    margin: 20px auto 30px;  
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,7 +96,7 @@ body {
 }
 
 .mic-icon {
-    width: 70px;  /* Más grande */
+    width: 70px;  
     height: 70px;
     z-index: 2;
 }
@@ -112,10 +111,10 @@ body {
     100% { transform: scale(1); opacity: 0.5; }
 }
 
-/* Botón decir palabra */
+
 .mic-btn {
     display: block;
-    margin: 0 auto;  /* Centrado */
+    margin: 0 auto; 
     background: linear-gradient(135deg, #3f33b3, #218efc);
     color: white;
     padding: 12px 25px;
@@ -130,7 +129,7 @@ body {
     background: linear-gradient(135deg, #218efc, #3f33b3);
 }
 
-/* Lista de audios */
+
 .audio-list .audio-item {
     display: flex;
     justify-content: space-between;
@@ -162,7 +161,7 @@ body {
     background: #218efc;
 }
 
-/* Modal Reproductor */
+
 .player-modal {
     display: none;
     justify-content: center;
