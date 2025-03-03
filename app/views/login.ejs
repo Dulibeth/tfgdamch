@@ -7,6 +7,14 @@
     <script src="https://kit.fontawesome.com/a81368914c.js" crossorigin="anonymous"></script>
 </head>
 <body>
+    <header class="header">
+        <div class="logo-title">
+            <img src="/images/logo.png" alt="Logo AudioFind" class="header-logo">
+            <span class="header-title">AudioFind</span>
+        </div>
+        <button class="volver-btn" onclick="window.location.href='/index'">Volver</button>
+    </header>
+
     <div class="login-card">
         <div class="left-section">
             <div class="blob-container">
@@ -15,6 +23,7 @@
             </div>
         </div>
         <div class="right-section">
+            <h2 class="title">Inicio de sesión</h2><br>
             <img class="user-icon" src="/images/user.png" alt="User Icon">
             <form action="/login">
                 <div class="input-div">
@@ -24,11 +33,15 @@
                 <div class="input-div">
                     <i class="fas fa-lock"></i>
                     <input type="password" placeholder="Contraseña" required>
-                </div>
+                </div><br>
                 <button type="submit" class="btn">Iniciar Sesión</button>
             </form>
+            <p class="register-link">¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
         </div>
     </div>
-    
+
+    <footer class="footer">
+        © 2025 AudioFind - Todos los derechos reservados
+    </footer>
 </body>
 </html>

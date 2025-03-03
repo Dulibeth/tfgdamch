@@ -19,25 +19,24 @@
 
 <main class="dashboard">
     <div class="search-card">
-        <h2>Búsqueda por voz</h2>
-        <p>¿Cuántos minutos antes y después quieres escuchar?</p>
-        <p>(Si no seleccionas, se traerá el audio completo)</p>
+        <h2>Búsqueda por voz</h2><br>
+        <p>¿Cuántos minutos antes y después de la mención de la palabra quieres escuchar?</p><br>
         <div class="time-selector">
             <button class="time-btn" onclick="changeTime(-1)">-</button>
             <input type="number" id="time-range" min="0" max="10" value="2" readonly>
             <button class="time-btn" onclick="changeTime(1)">+</button>
-        </div>
+        </div><br>
         <div class="mic-container">
             <div class="mic-circle" id="micCircle"></div>
             <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
         </div>
 
-        <button class="mic-btn" onclick="startRecording()">Decir palabra</button>
+        <button class="mic-btn" onclick="startRecording()">Decir palabra</button><br>
         <p id="detected-word">Palabra detectada: <strong>-</strong></p>
     </div>
 
     <div class="results-section">
-        <h2>Lista de Audios</h2>
+        <h2>Lista de Audios</h2><br>
         <div class="audio-list">
             <div class="audio-item" onclick="openPlayer('Entrevista CEO.mp3')">Entrevista CEO.mp3<button class="play-btn">Reproducir</button></div>
             <div class="audio-item" onclick="openPlayer('Conferencia IA.mp3')">Conferencia IA.mp3<button class="play-btn">Reproducir</button></div>
