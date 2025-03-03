@@ -1,77 +1,55 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>AudioFind - Búsqueda por Voz</title>
+    <title>AudioFind</title>
     <link rel="stylesheet" href="/stylesheets/styleIndex.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a81368914c.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 
 <header class="header">
     <div class="logo-container">
-        <img src="/images/logo.png" alt="Logo AudioFind" class="logo">
+        <img src="/images/logo.png" class="logo">
         <span class="site-name">AudioFind</span>
     </div>
     <nav class="nav-buttons">
-        <a href="/landing" class="header-btn">Cerrar Sesión</a>
+        <a href="/login" class="header-btn">Iniciar Sesión</a>
+        <a href="/register" class="header-btn primary">Regístrate</a>
     </nav>
 </header>
 
-<main class="dashboard">
-    <div class="search-card">
-        <h2>Búsqueda por voz</h2>
-        <p>¿Cuántos minutos antes y después quieres escuchar?</p>
-        <p>(Si no seleccionas, se traerá el audio completo)</p>
-        <div class="time-selector">
-            <button class="time-btn" onclick="changeTime(-1)">-</button>
-            <input type="number" id="time-range" min="0" max="10" value="2" readonly>
-            <button class="time-btn" onclick="changeTime(1)">+</button>
-        </div>
-        <div class="mic-container">
-            <div class="mic-circle" id="micCircle"></div>
-            <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
-        </div>
-
-        <button class="mic-btn" onclick="startRecording()">Decir palabra</button>
-        <p id="detected-word">Palabra detectada: <strong>-</strong></p>
+<section class="hero">
+    <div class="hero-text">
+        <h1>Encuentra palabras en tus audios en segundos</h1>
+        <p>Analiza archivos de audio con alta precisión y velocidad.</p>
+        <a href="/register" class="cta-button">Comenzar ahora</a>
     </div>
-
-    <div class="results-section">
-        <h2>Lista de Audios</h2>
-        <div class="audio-list">
-            <div class="audio-item" onclick="openPlayer('Entrevista CEO.mp3')">Entrevista CEO.mp3<button class="play-btn">Reproducir</button></div>
-            <div class="audio-item" onclick="openPlayer('Conferencia IA.mp3')">Conferencia IA.mp3<button class="play-btn">Reproducir</button></div>
-            <div class="audio-item" onclick="openPlayer('Podcast Tecnología.mp3')">Podcast Tecnología.mp3<button class="play-btn">Reproducir</button></div>
-        </div>
+    <div class="hero-image">
+        <img src="/images/blob.svg" class="animated-blob">
+        <img src="/images/logo.png" class="center-logo">
     </div>
-</main>
+</section>
 
-<div class="player-modal" id="playerModal">
-    <div class="player-content">
-        <span class="close-btn" onclick="closePlayer()">×</span>
-        <p class="playing-now">Reproduciendo ahora</p>
-        <div class="player-image">
-            <img src="/images/logo.png" alt="Audio Logo">
-        </div>
-        <p class="player-title" id="player-title">Título del audio</p>
-        <p class="player-artist">AudioFind</p>
-        <input type="range" class="progress-bar" value="0">
-        <div class="time-info">
-            <span id="currentTime">0:00</span>
-            <span id="totalTime">0:00</span>
-        </div>
-        <div class="player-controls">
-            <button onclick="seek(-10)">⏪</button>
-            <button onclick="togglePlay()">▶️</button>
-            <button onclick="seek(10)">⏩</button>
-        </div>
+<section class="features">
+    <div class="feature">
+        <h3>Búsqueda Inteligente</h3>
+        <p>Encuentra palabras específicas en segundos.</p>
     </div>
-</div>
+    <div class="feature">
+        <h3>Alta Precisión</h3>
+        <p>Algoritmos optimizados para búsquedas fiables.</p>
+    </div>
+    <div class="feature">
+        <h3>Accesible y Simple</h3>
+        <p>Desde cualquier navegador y dispositivo.</p>
+    </div>
+</section>
 
 <footer>
-  <p>&copy; 2025 AudioFind - Todos los derechos reservados</p>
+    <p>&copy; 2025 AudioFind - Todos los derechos reservados</p>
 </footer>
-<script src="/javascripts/index.js"></script>
 
 </body>
 </html>
