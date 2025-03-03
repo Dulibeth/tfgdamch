@@ -72,11 +72,15 @@ body {
 }
 
 .title {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     font-size: 22px;
     font-weight: bold;
     color: #333;
     text-align: center;
-    margin-top: 10px;
+    white-space: nowrap;
 }
 
 .left-section {
