@@ -1,5 +1,3 @@
-let audio = new Audio('mock-audio.mp3');
-
 function startRecording() {
     document.querySelector('.mic-container').classList.add('listening');
     setTimeout(() => {

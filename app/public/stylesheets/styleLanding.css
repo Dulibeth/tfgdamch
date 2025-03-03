@@ -142,7 +142,7 @@ body {
     height: 100%;
     position: absolute;
     animation: float 6s infinite ease-in-out;
-    opacity: 2;
+    opacity: 4;
 }
 
 .center-logo {
@@ -193,8 +193,8 @@ body {
     padding: 20px;
     border-radius: 15px;
     text-align: center;
-    width: 280px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    box-shadow: 0 4px 15px rgba(17, 11, 40, 0.1);
     transition: 0.3s;
 }
 
@@ -206,7 +206,7 @@ body {
     margin-bottom: 8px;
     font-size: 1.2rem;
     font-weight: bold;
-    color: #3f33b3;
+    color: #3339b3;
 }
 
 .feature p {
