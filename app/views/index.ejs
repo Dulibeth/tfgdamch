@@ -18,58 +18,52 @@
 </header>
 
 <main class="dashboard">
-    <div class="search-section">
-        <div class="search-card">
-            <h2>Búsqueda por voz</h2>
-
-            <p>¿Cuántos minutos antes y después quieres escuchar?</p>
-            <div class="time-selector">
-                <button onclick="changeMinutes(-1)">-</button>
-                <input type="text" id="time-range" value="2" readonly>
-                <button onclick="changeMinutes(1)">+</button>
-            </div>
-            <p class="small-note">(Si no seleccionas, se traerá el audio completo)</p>
-
-            <div class="mic-container" id="micContainer">
-                <div class="mic-circle" id="micCircle"></div>
-                <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
-            </div>
-
-            <button class="mic-btn" onclick="startRecording()">Decir palabra</button>
-
-            <p id="detected-word">Palabra detectada: <strong>-</strong></p>
+    <div class="search-card">
+        <h2>Búsqueda por voz</h2>
+        <p>¿Cuántos minutos antes y después quieres escuchar?</p>
+        <div class="time-selector">
+            <button onclick="changeTime(-1)">-</button>
+            <input type="number" id="time-range" min="0" max="10" value="2" readonly>
+            <button onclick="changeTime(1)">+</button>
         </div>
+        <p>(Si no seleccionas, se traerá el audio completo)</p>
+
+        <div class="mic-container">
+            <div class="mic-circle" id="micCircle"></div>
+            <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
+        </div>
+
+        <button class="mic-btn" onclick="startRecording()">Decir palabra</button>
+        <p id="detected-word">Palabra detectada: <strong>-</strong></p>
     </div>
 
     <div class="results-section">
         <h2>Lista de Audios</h2>
         <div class="audio-list">
-            <div class="audio-item">
-                <span>Entrevista CEO.mp3</span>
-                <button onclick="openPlayer('Entrevista CEO.mp3')">▶️</button>
-            </div>
-            <div class="audio-item">
-                <span>Conferencia IA.mp3</span>
-                <button onclick="openPlayer('Conferencia IA.mp3')">▶️</button>
-            </div>
-            <div class="audio-item">
-                <span>Podcast Tecnología.mp3</span>
-                <button onclick="openPlayer('Podcast Tecnología.mp3')">▶️</button>
-            </div>
+            <div class="audio-item" onclick="openPlayer('Entrevista CEO.mp3')">Entrevista CEO.mp3<button>Reproducir</button></div>
+            <div class="audio-item" onclick="openPlayer('Conferencia IA.mp3')">Conferencia IA.mp3<button>Reproducir</button></div>
+            <div class="audio-item" onclick="openPlayer('Podcast Tecnología.mp3')">Podcast Tecnología.mp3<button>Reproducir</button></div>
         </div>
     </div>
 </main>
 
 <div class="player-modal" id="playerModal">
     <div class="player-content">
-        <h3 id="player-title">Reproduciendo...</h3>
-        <audio id="audioPlayer" controls>
-            <source src="mock-audio.mp3" type="audio/mp3">
-        </audio>
+        <p class="playing-now">Reproduciendo ahora</p>
+        <div class="player-image">
+            <img src="/images/logo.png" alt="Audio Logo">
+        </div>
+        <p class="player-title" id="player-title">Título del audio</p>
+        <p class="player-artist">AudioFind</p>
+        <input type="range" class="progress-bar" value="0">
+        <div class="time-info">
+            <span id="currentTime">0:00</span>
+            <span id="totalTime">0:00</span>
+        </div>
         <div class="player-controls">
-            <button onclick="seek(-10)">⏪ -10s</button>
-            <button onclick="togglePlay()">▶️ / ⏸️</button>
-            <button onclick="seek(10)">⏩ +10s</button>
+            <button onclick="seek(-10)">⏪</button>
+            <button onclick="togglePlay()">▶️</button>
+            <button onclick="seek(10)">⏩</button>
         </div>
         <button class="close-btn" onclick="closePlayer()">Cerrar</button>
     </div>
