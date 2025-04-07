@@ -4,8 +4,62 @@ const audiosMock = [
     { nombre: "Podcast Tecnología.mp3" }
 ];
 
-
 let audio = new Audio('/audios/prueba.wav');
+let mediaRecorder;
+let audioChunks = [];
+let silenceTimer;
+
+function startRecording() {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        const micContainer = document.querySelector('.mic-container');
+        micContainer.classList.add('listening', 'recording');
+
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            micContainer.classList.remove('listening', 'recording');
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob);
+
+            fetch('/home/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Archivo enviado con éxito:', data);
+            })
+            .catch(error => {
+                console.error('Error al enviar el archivo:', error);
+            });
+
+            console.log('Audio grabado:', audioBlob);
+            document.querySelector('.mic-btn').disabled = false;
+        };
+
+        mediaRecorder.start();
+
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => {
+            mediaRecorder.stop();
+        }, 3000);
+
+        document.querySelector('.mic-btn').disabled = true;
+    })
+    .catch(error => {
+        console.error('Error al acceder al micrófono:', error);
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarAudiosMock();
@@ -26,7 +80,7 @@ function cargarAudiosMock() {
     });
 }
 
-function startRecording() {
+function startRecordingMocking() {
     const micContainer = document.querySelector('.mic-container');
     micContainer.classList.add('listening');
 
@@ -92,18 +146,3 @@ document.querySelector('.progress-bar').addEventListener('input', (e) => {
     const percent = e.target.value / 100;
     audio.currentTime = percent * audio.duration;
 });
-
-
-/*function testConexionCloud() {
-    fetch('http://34.136.149.194:3000/palabra')
-        .then(response => response.json())
-        .then(data => {
-            const palabra = data.message;
-            document.querySelector('#detected-word strong').textContent = palabra;
-        })
-        .catch(error => {
-            console.error('Error al contactar al microservicio:', error);
-            document.querySelector('#detected-word strong').textContent = 'Error';
-        });
-}*/
-
