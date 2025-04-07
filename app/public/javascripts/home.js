@@ -92,3 +92,18 @@ document.querySelector('.progress-bar').addEventListener('input', (e) => {
     const percent = e.target.value / 100;
     audio.currentTime = percent * audio.duration;
 });
+
+
+/*function testConexionCloud() {
+    fetch('http://34.136.149.194:3000/palabra')
+        .then(response => response.json())
+        .then(data => {
+            const palabra = data.message;
+            document.querySelector('#detected-word strong').textContent = palabra;
+        })
+        .catch(error => {
+            console.error('Error al contactar al microservicio:', error);
+            document.querySelector('#detected-word strong').textContent = 'Error';
+        });
+}*/
+
