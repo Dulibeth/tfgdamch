@@ -9,7 +9,7 @@ var storage = multer.memoryStorage();
 var upload = multer({ storage: storage });
 
 // 🔁 Pega aquí tu URL de ngrok (la que te dio Colab)
-const WHISPER_API_URL = ' https://clever-dingos-mate.loca.lt/transcribe';
+const WHISPER_API_URL = 'https://miunico123abc.loca.lt/transcribe';
 
 router.get('/', function(req, res, next) {
   res.render('home', { title: 'Home' });
