@@ -4,9 +4,12 @@ var router = express.Router();
 var axios = require('axios');
 var FormData = require('form-data');
 
-// Configuración de Multer para almacenar archivos en memoria
+// Usamos memoria (no archivo en disco)
 var storage = multer.memoryStorage();
 var upload = multer({ storage: storage });
+
+// 🔁 Pega aquí tu URL de ngrok (la que te dio Colab)
+const WHISPER_API_URL = ' https://clever-dingos-mate.loca.lt/transcribe';
 
 router.get('/', function(req, res, next) {
   res.render('home', { title: 'Home' });
@@ -14,36 +17,38 @@ router.get('/', function(req, res, next) {
 
 router.post('/upload', upload.single('audio'), async function(req, res, next) {
   if (!req.file) {
-      return res.status(400).json({ message: 'No file received' });
+    return res.status(400).json({ message: 'No file received' });
   }
 
+
+  // Crear el formulario para enviar al microservicio
   const formData = new FormData();
-  // Use 'file' instead of 'audio' to match FastAPI's expected parameter name
   formData.append('file', req.file.buffer, {
-      filename: req.file.originalname || 'audio.webm',
-      contentType: req.file.mimetype
+    filename: req.file.originalname || 'audio.wav',
+    contentType: req.file.mimetype
   });
 
   try {
-      const response = await axios.post(
-          'https://a537-34-125-143-9.ngrok-free.app/transcribe', // Use HTTP (ngrok handles HTTPS)
-          formData,
-          {
-              headers: {
-                  ...formData.getHeaders(),
-              },
-              maxContentLength: Infinity,
-              maxBodyLength: Infinity
-          }
-      );
+    // 🔁 Enviar al microservicio Whisper
+    const response = await axios.post(WHISPER_API_URL, formData, {
+      headers: {
+        ...formData.getHeaders()
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
+    });
 
-      res.json(response.data);
+    // 🔙 Devolver la transcripción al frontend
+    res.json({
+      message: 'Archivo recibido y transcrito con éxito',
+      transcription: response.data.transcription
+    });
   } catch (error) {
-      console.error('API Error:', error.response?.data || error.message);
-      res.status(500).json({ 
-          error: 'API error',
-          details: error.response?.data || error.message 
-      });
+    console.error('Error en microservicio Whisper:', error.response?.data || error.message);
+    res.status(500).json({
+      error: 'Error al transcribir el audio',
+      details: error.response?.data || error.message
+    });
   }
 });
 

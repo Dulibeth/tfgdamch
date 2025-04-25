@@ -31,13 +31,12 @@ function startRecording() {
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             audioGrabadoURL = URL.createObjectURL(audioBlob);
 
-            // Mostrar botón centrado "Escuchar palabra"
             const previewContainer = document.getElementById('audio-preview-container');
             previewContainer.innerHTML = `
                 <button onclick="escucharPalabra()" class="play-btn" style="margin-top: 10px;">Escuchar palabra</button>
             `;
 
-            // (Opcional) Enviar al servidor
+            // ✅ Enviar al backend Node.js
             const formData = new FormData();
             formData.append('audio', audioBlob);
 
@@ -47,10 +46,14 @@ function startRecording() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Archivo enviado con éxito:', data);
+                console.log('✅ Transcripción recibida del servidor:');
+                console.log(data);
+
+                const transcription = data.transcription || '(sin transcripción)';
+                document.getElementById('detected-word').innerHTML = `Palabra detectada: <strong>${transcription}</strong>`;
             })
             .catch(error => {
-                console.error('Error al enviar el archivo:', error);
+                console.error('❌ Error al enviar el archivo o recibir respuesta:', error);
             });
 
             document.querySelector('.mic-btn').disabled = false;
