@@ -33,13 +33,17 @@
         </div>
 
         <button class="mic-btn" onclick="startRecording()">Decir palabra</button><br>
-        <p id="detected-word">Palabra detectada: <strong>-</strong></p>
+
+        <!-- Palabra detectada y preview -->
+        <div id="detected-word-container" style="margin-top: 20px; text-align: center;">
+            <p id="detected-word">Palabra detectada: <strong>-</strong></p>
+            <div id="audio-preview-container" style="margin-top: 15px;"></div>
+        </div>
     </div>
 
     <div class="results-section">
         <h2>Lista de Audios</h2><br>
-        <div class="audio-list">
-        </div>
+        <div class="audio-list"></div>
     </div>
 </main>
 

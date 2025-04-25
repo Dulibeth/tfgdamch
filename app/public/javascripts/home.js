@@ -8,6 +8,7 @@ let audio = new Audio('/audios/prueba.wav');
 let mediaRecorder;
 let audioChunks = [];
 let silenceTimer;
+let audioGrabadoURL = null;
 
 function startRecording() {
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
@@ -28,6 +29,15 @@ function startRecording() {
         mediaRecorder.onstop = () => {
             micContainer.classList.remove('listening', 'recording');
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            audioGrabadoURL = URL.createObjectURL(audioBlob);
+
+            // Mostrar botón centrado "Escuchar palabra"
+            const previewContainer = document.getElementById('audio-preview-container');
+            previewContainer.innerHTML = `
+                <button onclick="escucharPalabra()" class="play-btn" style="margin-top: 10px;">Escuchar palabra</button>
+            `;
+
+            // (Opcional) Enviar al servidor
             const formData = new FormData();
             formData.append('audio', audioBlob);
 
@@ -43,7 +53,6 @@ function startRecording() {
                 console.error('Error al enviar el archivo:', error);
             });
 
-            console.log('Audio grabado:', audioBlob);
             document.querySelector('.mic-btn').disabled = false;
         };
 
@@ -61,13 +70,44 @@ function startRecording() {
     });
 }
 
+function escucharPalabra() {
+    if (!audioGrabadoURL) return;
+
+    document.getElementById('player-title').innerText = "Palabra Detectada";
+    document.getElementById('playerModal').style.display = 'flex';
+
+    audio.pause();
+    audio = new Audio(audioGrabadoURL);
+
+    setupAudioEvents();
+    audio.play();
+}
+
+function setupAudioEvents() {
+    audio.addEventListener('timeupdate', () => {
+        const progressBar = document.querySelector('.progress-bar');
+        const currentTime = document.getElementById('currentTime');
+        const totalTime = document.getElementById('totalTime');
+
+        progressBar.value = (audio.currentTime / audio.duration) * 100;
+        currentTime.innerText = formatTime(audio.currentTime);
+        totalTime.innerText = formatTime(audio.duration);
+    });
+
+    document.querySelector('.progress-bar').addEventListener('input', (e) => {
+        const percent = e.target.value / 100;
+        audio.currentTime = percent * audio.duration;
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     cargarAudiosMock();
+    setupAudioEvents();
 });
 
 function cargarAudiosMock() {
     const audioListContainer = document.querySelector('.audio-list');
-    audioListContainer.innerHTML = '';  
+    audioListContainer.innerHTML = '';
 
     audiosMock.forEach(audioData => {
         const audioDiv = document.createElement('div');
@@ -80,22 +120,11 @@ function cargarAudiosMock() {
     });
 }
 
-function startRecordingMocking() {
-    const micContainer = document.querySelector('.mic-container');
-    micContainer.classList.add('listening');
-
-    setTimeout(() => {
-        micContainer.classList.remove('listening');
-        document.getElementById('detected-word').innerHTML = 'Palabra detectada: <strong>Innovación</strong>';
-    }, 3000);
-}
-
 function changeTime(amount) {
     const timeInput = document.getElementById('time-range');
     let currentValue = parseInt(timeInput.value, 10);
 
     currentValue += amount;
-
     if (currentValue < 0) currentValue = 0;
     if (currentValue > 10) currentValue = 10;
 
@@ -105,7 +134,8 @@ function changeTime(amount) {
 function openPlayer(title) {
     document.getElementById('player-title').innerText = title;
     document.getElementById('playerModal').style.display = 'flex';
-    audio.currentTime = 0;
+    audio = new Audio(`/audios/${title}`);
+    setupAudioEvents();
     audio.play();
 }
 
@@ -113,16 +143,6 @@ function closePlayer() {
     audio.pause();
     document.getElementById('playerModal').style.display = 'none';
 }
-
-audio.addEventListener('timeupdate', () => {
-    const progressBar = document.querySelector('.progress-bar');
-    const currentTime = document.getElementById('currentTime');
-    const totalTime = document.getElementById('totalTime');
-
-    progressBar.value = (audio.currentTime / audio.duration) * 100;
-    currentTime.innerText = formatTime(audio.currentTime);
-    totalTime.innerText = formatTime(audio.duration);
-});
 
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
@@ -141,8 +161,3 @@ function togglePlay() {
         audio.pause();
     }
 }
-
-document.querySelector('.progress-bar').addEventListener('input', (e) => {
-    const percent = e.target.value / 100;
-    audio.currentTime = percent * audio.duration;
-});
