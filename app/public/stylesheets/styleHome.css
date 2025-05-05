@@ -181,12 +181,12 @@
   }
   .player-content {
     background: #fff;
-    padding: 40px 50px;
+    padding: 40px 60px;
     border-radius: 15px;
     text-align: center;
     position: relative;
     width: 90%;
-    max-width: 600px;
+    max-width: 800px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
   }
   .close-btn {
@@ -237,6 +237,23 @@
   .time-display #timeInfo {
     font-family: monospace;
     font-size: 0.95rem;
+    color: #333;
+  }
+  
+  /* Paso 1: estilos para la lista de marcas de tiempo */
+  .mention-list {
+    display: flex;
+    flex-direction: column; /* columna vertical */
+    gap: 6px;               /* espacio entre tags */
+    margin: 12px 0;
+    max-height: 200px;
+    overflow-y: auto;       /* scroll si hay muchas */
+  }
+  .mention-tag {
+    background: #f0f0f0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
     color: #333;
   }
   

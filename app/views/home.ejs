@@ -21,6 +21,7 @@
   </header>
 
   <main class="dashboard">
+
     <div class="search-card">
       <h2>Búsqueda por voz</h2><br>
       <p>¿Cuántos minutos antes y después de la mención de la palabra quieres escuchar?</p><br>
@@ -46,7 +47,6 @@
     </div>
   </main>
 
-  <!-- Modal de reproducción con WaveSurfer -->
   <div class="player-modal" id="playerModal">
     <div class="player-content">
       <span class="close-btn" onclick="closePlayer()">×</span>
@@ -62,6 +62,11 @@
       <div class="time-display">
         <span id="timeInfo">0:00 / 0:00</span>
       </div>
+      
+      <label for="mentionSelect" class="mention-label">Ir a mención:</label>
+      <select id="mentionSelect" class="mention-select">
+        <option value="">— Selecciona —</option>
+      </select>
 
       <div class="player-controls">
         <button onclick="wavesurfer.skipBackward()">⏪</button>

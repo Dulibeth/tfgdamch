@@ -17,8 +17,7 @@ function startRecording() {
 
 function changeTime(amount) {
   const inp = document.getElementById('time-range');
-  const v = Math.min(10, Math.max(0, parseInt(inp.value, 10) + amount));
-  inp.value = v;
+  inp.value = Math.min(10, Math.max(0, parseInt(inp.value, 10) + amount));
 }
 
 function formatTime(sec) {
@@ -28,14 +27,60 @@ function formatTime(sec) {
   return `${m}:${s}`;
 }
 
-function openPlayerModal(src, title = '') {
+function renderResults(results) {
+  const list = document.querySelector('.audio-list');
+  list.innerHTML = '';
+  if (!results.length) {
+    list.innerHTML = '<p>No se encontraron audios.</p>';
+    return;
+  }
+  results.forEach(r => {
+    const times = (r.menciones || []).map(m => m.start);
+    const div = document.createElement('div');
+    div.className = 'audio-item';
+    div.innerHTML = `
+      <span><strong>${r.filename}</strong></span>
+      <button class="play-btn"
+        onclick='openPlayerModal(
+          "${r.filename}",
+          "${r.filename}",
+          ${JSON.stringify(times)}
+        )'>
+        ▶️
+      </button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function openPlayerModal(src, title = '', mentions = []) {
   document.getElementById('player-title').innerText = title || src;
   document.getElementById('playerModal').style.display = 'flex';
   isPlaying = false;
   updateTimeInfo();
 
-  if (wavesurfer) wavesurfer.destroy();
+  // 1) Poblamos el <select> de menciones, restando 2s
+  const sel = document.getElementById('mentionSelect');
+  sel.innerHTML = `<option value="">— Selecciona —</option>`;
+  const OFFSET = 2; // segundos antes de la mención
+  mentions.forEach(t => {
+    const tAdj = Math.max(0, t - OFFSET);
+    const opt = document.createElement('option');
+    opt.value = tAdj;
+    opt.textContent = formatTime(tAdj);
+    sel.appendChild(opt);
+  });
+  sel.onchange = () => {
+    const v = parseFloat(sel.value);
+    if (!isNaN(v) && wavesurfer) {
+      wavesurfer.seekTo(v / wavesurfer.getDuration());
+      wavesurfer.play();
+      isPlaying = true;
+    }
+  };
 
+  // 2) Inicializamos WaveSurfer
+  if (wavesurfer) wavesurfer.destroy();
   wavesurfer = WaveSurfer.create({
     container: '#waveform',
     waveColor: '#4a90e2',
@@ -46,7 +91,6 @@ function openPlayerModal(src, title = '') {
     normalize: true,
     responsive: true
   });
-
   wavesurfer.skipBackward = () => {
     const t = Math.max(0, wavesurfer.getCurrentTime() - SKIP_SECONDS);
     wavesurfer.seekTo(t / wavesurfer.getDuration());
@@ -59,14 +103,10 @@ function openPlayerModal(src, title = '') {
   const url = src.startsWith('blob:') ? src : `/audio/${src}`;
   wavesurfer.load(url);
 
-  wavesurfer.on('ready', () => {
-    updateTimeInfo();
-  });
+  wavesurfer.on('ready', updateTimeInfo);
   wavesurfer.on('audioprocess', updateTimeInfo);
   wavesurfer.on('seek', updateTimeInfo);
-  wavesurfer.on('finish', () => {
-    isPlaying = false;
-  });
+  wavesurfer.on('finish', () => { isPlaying = false; });
 }
 
 function togglePlay() {
@@ -88,24 +128,6 @@ function closePlayer() {
     wavesurfer = null;
   }
   document.getElementById('playerModal').style.display = 'none';
-}
-
-function renderResults(results) {
-  const list = document.querySelector('.audio-list');
-  list.innerHTML = '';
-  if (!results.length) {
-    list.innerHTML = '<p>No se encontraron audios.</p>';
-    return;
-  }
-  results.forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'audio-item';
-    div.innerHTML = `
-      <span><strong>${r.filename}</strong></span>
-      <button class="play-btn" onclick="openPlayerModal('${r.filename}','${r.filename}')">▶️</button>
-    `;
-    list.appendChild(div);
-  });
 }
 
 document.addEventListener('DOMContentLoaded', initMockSearch);
