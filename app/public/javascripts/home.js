@@ -1,166 +1,111 @@
-const audiosMock = [
-    { nombre: "Entrevista CEO.mp3" },
-    { nombre: "Conferencia IA.mp3" },
-    { nombre: "Podcast Tecnología.mp3" }
-];
+// public/javascripts/home.js
 
-let audio = new Audio('/audios/prueba.wav');
-let mediaRecorder;
-let audioChunks = [];
-let silenceTimer;
-let audioGrabadoURL = null;
+let wavesurfer;
+const SKIP_SECONDS = 10;
+let isPlaying = false;
+
+function initMockSearch() {
+  fetch('/search?term=Sánchez')
+    .then(res => res.json())
+    .then(data => renderResults(data.results || []))
+    .catch(err => console.error('Error fetch /search:', err));
+}
 
 function startRecording() {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-    }
-
-    navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(stream => {
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        const micContainer = document.querySelector('.mic-container');
-        micContainer.classList.add('listening', 'recording');
-
-        mediaRecorder.ondataavailable = event => {
-            audioChunks.push(event.data);
-        };
-
-        mediaRecorder.onstop = () => {
-            micContainer.classList.remove('listening', 'recording');
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            audioGrabadoURL = URL.createObjectURL(audioBlob);
-
-            const previewContainer = document.getElementById('audio-preview-container');
-            previewContainer.innerHTML = `
-                <button onclick="escucharPalabra()" class="play-btn" style="margin-top: 10px;">Escuchar palabra</button>
-            `;
-
-            // ✅ Enviar al backend Node.js
-            const formData = new FormData();
-            formData.append('audio', audioBlob);
-
-            fetch('/home/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('✅ Transcripción recibida del servidor:');
-                console.log(data);
-
-                const transcription = data.transcription || '(sin transcripción)';
-                document.getElementById('detected-word').innerHTML = `Palabra detectada: <strong>${transcription}</strong>`;
-            })
-            .catch(error => {
-                console.error('❌ Error al enviar el archivo o recibir respuesta:', error);
-            });
-
-            document.querySelector('.mic-btn').disabled = false;
-        };
-
-        mediaRecorder.start();
-
-        clearTimeout(silenceTimer);
-        silenceTimer = setTimeout(() => {
-            mediaRecorder.stop();
-        }, 3000);
-
-        document.querySelector('.mic-btn').disabled = true;
-    })
-    .catch(error => {
-        console.error('Error al acceder al micrófono:', error);
-    });
-}
-
-function escucharPalabra() {
-    if (!audioGrabadoURL) return;
-
-    document.getElementById('player-title').innerText = "Palabra Detectada";
-    document.getElementById('playerModal').style.display = 'flex';
-
-    audio.pause();
-    audio = new Audio(audioGrabadoURL);
-
-    setupAudioEvents();
-    audio.play();
-}
-
-function setupAudioEvents() {
-    audio.addEventListener('timeupdate', () => {
-        const progressBar = document.querySelector('.progress-bar');
-        const currentTime = document.getElementById('currentTime');
-        const totalTime = document.getElementById('totalTime');
-
-        progressBar.value = (audio.currentTime / audio.duration) * 100;
-        currentTime.innerText = formatTime(audio.currentTime);
-        totalTime.innerText = formatTime(audio.duration);
-    });
-
-    document.querySelector('.progress-bar').addEventListener('input', (e) => {
-        const percent = e.target.value / 100;
-        audio.currentTime = percent * audio.duration;
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    cargarAudiosMock();
-    setupAudioEvents();
-});
-
-function cargarAudiosMock() {
-    const audioListContainer = document.querySelector('.audio-list');
-    audioListContainer.innerHTML = '';
-
-    audiosMock.forEach(audioData => {
-        const audioDiv = document.createElement('div');
-        audioDiv.classList.add('audio-item');
-        audioDiv.innerHTML = `
-            <span>${audioData.nombre}</span>
-            <button class="play-btn" onclick="openPlayer('${audioData.nombre}')">Reproducir</button>
-        `;
-        audioListContainer.appendChild(audioDiv);
-    });
+  document.getElementById('micContainer').classList.add('recording', 'listening');
 }
 
 function changeTime(amount) {
-    const timeInput = document.getElementById('time-range');
-    let currentValue = parseInt(timeInput.value, 10);
-
-    currentValue += amount;
-    if (currentValue < 0) currentValue = 0;
-    if (currentValue > 10) currentValue = 10;
-
-    timeInput.value = currentValue;
+  const inp = document.getElementById('time-range');
+  const v = Math.min(10, Math.max(0, parseInt(inp.value, 10) + amount));
+  inp.value = v;
 }
 
-function openPlayer(title) {
-    document.getElementById('player-title').innerText = title;
-    document.getElementById('playerModal').style.display = 'flex';
-    audio = new Audio(`/audios/${title}`);
-    setupAudioEvents();
-    audio.play();
+function formatTime(sec) {
+  if (!isFinite(sec) || sec < 0) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = String(Math.floor(sec % 60)).padStart(2, '0');
+  return `${m}:${s}`;
 }
 
-function closePlayer() {
-    audio.pause();
-    document.getElementById('playerModal').style.display = 'none';
-}
+function openPlayerModal(src, title = '') {
+  document.getElementById('player-title').innerText = title || src;
+  document.getElementById('playerModal').style.display = 'flex';
+  isPlaying = false;
+  updateTimeInfo();
 
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
-    return `${minutes}:${secs}`;
-}
+  if (wavesurfer) wavesurfer.destroy();
 
-function seek(seconds) {
-    audio.currentTime += seconds;
+  wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: '#4a90e2',
+    progressColor: '#007aff',
+    backend: 'MediaElement',
+    height: 60,
+    barWidth: 2,
+    normalize: true,
+    responsive: true
+  });
+
+  wavesurfer.skipBackward = () => {
+    const t = Math.max(0, wavesurfer.getCurrentTime() - SKIP_SECONDS);
+    wavesurfer.seekTo(t / wavesurfer.getDuration());
+  };
+  wavesurfer.skipForward = () => {
+    const t = Math.min(wavesurfer.getDuration(), wavesurfer.getCurrentTime() + SKIP_SECONDS);
+    wavesurfer.seekTo(t / wavesurfer.getDuration());
+  };
+
+  const url = src.startsWith('blob:') ? src : `/audio/${src}`;
+  wavesurfer.load(url);
+
+  wavesurfer.on('ready', () => {
+    updateTimeInfo();
+  });
+  wavesurfer.on('audioprocess', updateTimeInfo);
+  wavesurfer.on('seek', updateTimeInfo);
+  wavesurfer.on('finish', () => {
+    isPlaying = false;
+  });
 }
 
 function togglePlay() {
-    if (audio.paused) {
-        audio.play();
-    } else {
-        audio.pause();
-    }
+  if (!wavesurfer) return;
+  if (isPlaying) wavesurfer.pause();
+  else wavesurfer.play();
+  isPlaying = !isPlaying;
 }
+
+function updateTimeInfo() {
+  if (!wavesurfer) return;
+  document.getElementById('timeInfo').innerText =
+    `${formatTime(wavesurfer.getCurrentTime())} / ${formatTime(wavesurfer.getDuration())}`;
+}
+
+function closePlayer() {
+  if (wavesurfer) {
+    wavesurfer.destroy();
+    wavesurfer = null;
+  }
+  document.getElementById('playerModal').style.display = 'none';
+}
+
+function renderResults(results) {
+  const list = document.querySelector('.audio-list');
+  list.innerHTML = '';
+  if (!results.length) {
+    list.innerHTML = '<p>No se encontraron audios.</p>';
+    return;
+  }
+  results.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'audio-item';
+    div.innerHTML = `
+      <span><strong>${r.filename}</strong></span>
+      <button class="play-btn" onclick="openPlayerModal('${r.filename}','${r.filename}')">▶️</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initMockSearch);

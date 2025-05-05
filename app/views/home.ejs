@@ -1,79 +1,80 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>AudioFind</title>
-    <link rel="stylesheet" href="/stylesheets/styleHome.css">
-    <link rel="icon" href="/images/logo.png" type="image/png">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <title>AudioFind</title>
+  <link rel="stylesheet" href="/stylesheets/styleHome.css">
+  <link rel="icon" href="/images/logo.png" type="image/png">
+  <script src="https://unpkg.com/wavesurfer.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
-<header class="header">
+  <header class="header">
     <div class="logo-container">
-        <img src="/images/logo.png" alt="Logo AudioFind" class="logo">
-        <span class="site-name">AudioFind</span>
+      <img src="/images/logo.png" alt="Logo AudioFind" class="logo">
+      <span class="site-name">AudioFind</span>
     </div>
     <nav class="nav-buttons">
-        <a href="/index" class="header-btn">Cerrar Sesión</a>
+      <a href="/index" class="header-btn">Cerrar Sesión</a>
     </nav>
-</header>
+  </header>
 
-<main class="dashboard">
+  <main class="dashboard">
     <div class="search-card">
-        <h2>Búsqueda por voz</h2><br>
-        <p>¿Cuántos minutos antes y después de la mención de la palabra quieres escuchar?</p><br>
-        <div class="time-selector">
-            <button class="time-btn" onclick="changeTime(-1)">-</button>
-            <input type="number" id="time-range" min="0" max="10" value="2" readonly>
-            <button class="time-btn" onclick="changeTime(1)">+</button>
-        </div><br>
-        <div class="mic-container">
-            <div class="mic-circle" id="micCircle"></div>
-            <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
-        </div>
-        
-        <button class="mic-btn" onclick="startRecording()">Decir palabra</button><br>
-
-        <!-- Palabra detectada y preview -->
-        <div id="detected-word-container" style="margin-top: 20px; text-align: center;">
-            <p id="detected-word">Palabra detectada: <strong>-</strong></p>
-            <div id="audio-preview-container" style="margin-top: 15px;"></div>
-        </div>
+      <h2>Búsqueda por voz</h2><br>
+      <p>¿Cuántos minutos antes y después de la mención de la palabra quieres escuchar?</p><br>
+      <div class="time-selector">
+        <button class="time-btn" onclick="changeTime(-1)">-</button>
+        <input type="number" id="time-range" min="0" max="10" value="2" readonly>
+        <button class="time-btn" onclick="changeTime(1)">+</button>
+      </div><br>
+      <div class="mic-container" id="micContainer">
+        <div class="mic-circle" id="micCircle"></div>
+        <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
+      </div>
+      <button class="mic-btn" onclick="startRecording()">Decir palabra</button><br>
+      <div id="detected-word-container" style="margin-top:20px; text-align:center;">
+        <p id="detected-word">Palabra detectada: <strong>-</strong></p>
+        <div id="audio-preview-container" style="margin-top:15px;"></div>
+      </div>
     </div>
 
     <div class="results-section">
-        <h2>Lista de Audios</h2><br>
-        <div class="audio-list"></div>
+      <h2>Lista de Audios</h2><br>
+      <div class="audio-list"></div>
     </div>
-</main>
+  </main>
 
-<div class="player-modal" id="playerModal">
+  <!-- Modal de reproducción con WaveSurfer -->
+  <div class="player-modal" id="playerModal">
     <div class="player-content">
-        <span class="close-btn" onclick="closePlayer()">×</span>
-        <p class="playing-now">Reproduciendo ahora</p>
-        <div class="player-image">
-            <img src="/images/logo.png" alt="Audio Logo">
-        </div>
-        <p class="player-title" id="player-title">Título del audio</p>
-        <p class="player-artist">AudioFind</p>
-        <input type="range" class="progress-bar" value="0">
-        <div class="time-info">
-            <span id="currentTime">0:00</span>
-            <span id="totalTime">0:00</span>
-        </div>
-        <div class="player-controls">
-            <button onclick="seek(-10)">⏪</button>
-            <button onclick="togglePlay()">▶️</button>
-            <button onclick="seek(10)">⏩</button>
-        </div>
+      <span class="close-btn" onclick="closePlayer()">×</span>
+      <p class="playing-now">Reproduciendo ahora</p>
+      <div class="player-image">
+        <img src="/images/logo.png" alt="Audio Logo">
+      </div>
+      <p class="player-title" id="player-title">Título del audio</p>
+      <p class="player-artist">AudioFind</p>
+
+      <div id="waveform"></div>
+
+      <div class="time-display">
+        <span id="timeInfo">0:00 / 0:00</span>
+      </div>
+
+      <div class="player-controls">
+        <button onclick="wavesurfer.skipBackward()">⏪</button>
+        <button id="playPauseBtn" onclick="togglePlay()">▶️⏸️</button>
+        <button onclick="wavesurfer.skipForward()">⏩</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<footer class="footer">
+  <footer class="footer">
     <p>© 2025 AudioFind - Todos los derechos reservados</p>
-</footer>
+  </footer>
 
-<script src="/javascripts/home.js"></script>
-
+  <script src="/javascripts/home.js"></script>
 </body>
 </html>

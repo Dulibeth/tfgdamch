@@ -1,5 +1,5 @@
-const express     = require('express');
-const router      = express.Router();
+const express = require('express');
+const router = express.Router();
 const { MongoClient, ObjectId } = require('mongodb');
 
 router.get('/', async (req, res, next) => {
@@ -19,6 +19,7 @@ router.get('/', async (req, res, next) => {
     await client.connect();
     const coll = client.db('audiofind').collection('transcripciones');
 
+    // Pipeline de búsqueda por palabra y unión con datos de audio via filename
     const pipeline = [
       {
         $search: {
@@ -45,16 +46,29 @@ router.get('/', async (req, res, next) => {
           menciones: {
             $push: {
               palabra: '$segments.words.text',
-              start:   '$segments.words.start',
-              end:     '$segments.words.end'
+              start: '$segments.words.start',
+              end: '$segments.words.end'
             }
-          }
+          },
+          filename: { $first: '$filename' }
         }
       },
       {
+        // 'lookup' para unir con la colección GridFS 'audios.files' por filename
+        $lookup: {
+          from: 'audios.files',
+          localField: 'filename',
+          foreignField: 'filename',
+          as: 'audioData'
+        }
+      },
+      { $unwind: { path: '$audioData', preserveNullAndEmptyArrays: true } },
+      {
         $project: {
-          _id:     0,
-          audioId: '$_id',
+          _id: 0,
+          audioId: '$_id',            // id de la transcripción
+          fileId: '$audioData._id',  // id del chunk en GridFS
+          filename: 1,                // nombre de fichero
           menciones: 1
         }
       }

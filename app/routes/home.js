@@ -1,50 +1,61 @@
-var express = require('express');
-var multer = require('multer');
-var router = express.Router();
-var axios = require('axios');
-var FormData = require('form-data');
+// routes/home.js
+require('dotenv').config();
+const express = require('express');
+const multer  = require('multer');
+const axios   = require('axios');
+const FormData = require('form-data');
+const router  = express.Router();
 
+const storage = multer.memoryStorage();
+const upload  = multer({ storage });
 
-var storage = multer.memoryStorage();
-var upload = multer({ storage: storage });
+// const WHISPER_API_URL = 'https://miunico123abc.loca.lt/transcribe';
 
-
-const WHISPER_API_URL = 'https://miunico123abc.loca.lt/transcribe';
-
-router.get('/', function(req, res, next) {
+router.get('/', (req, res) => {
   res.render('home', { title: 'Home' });
 });
 
-router.post('/upload', upload.single('audio'), async function(req, res, next) {
+router.post('/upload', upload.single('audio'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file received' });
   }
 
+  // -- Código original para enviar a Whisper (comentado) --
+  /*
   const formData = new FormData();
   formData.append('file', req.file.buffer, {
     filename: req.file.originalname || 'audio.wav',
     contentType: req.file.mimetype
   });
 
+  let transcription;
   try {
-    const response = await axios.post(WHISPER_API_URL, formData, {
-      headers: {
-        ...formData.getHeaders()
-      },
+    const whispRes = await axios.post(WHISPER_API_URL, formData, {
+      headers: formData.getHeaders(),
       maxContentLength: Infinity,
       maxBodyLength: Infinity
     });
+    transcription = whispRes.data.transcription;
+  } catch (err) {
+    return res.status(500).json({ error: 'Error al transcribir el audio' });
+  }
+  */
 
-    res.json({
-      message: 'Archivo recibido y transcrito con éxito',
-      transcription: response.data.transcription
+  // Fijamos la transcripción manualmente para pruebas
+  const transcription = 'Sánchez';
+
+  // Llamada al endpoint de búsqueda
+  try {
+    const searchRes = await axios.get(
+      `http://localhost:${process.env.PORT || 3000}/search`,
+      { params: { term: transcription } }
+    );
+    return res.json({
+      transcription,
+      searchResults: searchRes.data.results
     });
-  } catch (error) {
-    console.error('Error en microservicio Whisper:', error.response?.data || error.message);
-    res.status(500).json({
-      error: 'Error al transcribir el audio',
-      details: error.response?.data || error.message
-    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Error al buscar en la base de datos' });
   }
 });
 
