@@ -15,21 +15,12 @@
       <img src="/images/logo.png" alt="Logo AudioFind" class="logo">
       <span class="site-name">AudioFind</span>
     </div>
-    <nav class="nav-buttons">
-      <a href="/index" class="header-btn">Cerrar Sesión</a>
-    </nav>
   </header>
 
   <main class="dashboard">
-
     <div class="search-card">
       <h2>Búsqueda por voz</h2><br>
-      <p>¿Cuántos minutos antes y después de la mención de la palabra quieres escuchar?</p><br>
-      <div class="time-selector">
-        <button class="time-btn" onclick="changeTime(-1)">-</button>
-        <input type="number" id="time-range" min="0" max="10" value="2" readonly>
-        <button class="time-btn" onclick="changeTime(1)">+</button>
-      </div><br>
+
       <div class="mic-container" id="micContainer">
         <div class="mic-circle" id="micCircle"></div>
         <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
@@ -63,10 +54,12 @@
         <span id="timeInfo">0:00 / 0:00</span>
       </div>
       
-      <label for="mentionSelect" class="mention-label">Ir a mención:</label>
-      <select id="mentionSelect" class="mention-select">
-        <option value="">— Selecciona —</option>
-      </select>
+      <div class="mention-container">
+        <label for="mentionSelect">Ir a mención:</label>
+        <select id="mentionSelect" class="mention-select">
+          <option value="">— Selecciona —</option>
+        </select>
+      </div>
 
       <div class="player-controls">
         <button onclick="wavesurfer.skipBackward()">⏪</button>

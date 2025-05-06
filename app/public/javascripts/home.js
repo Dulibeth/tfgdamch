@@ -4,15 +4,65 @@ let wavesurfer;
 const SKIP_SECONDS = 10;
 let isPlaying = false;
 
-function initMockSearch() {
-  fetch('/search?term=Sánchez')
-    .then(res => res.json())
-    .then(data => renderResults(data.results || []))
-    .catch(err => console.error('Error fetch /search:', err));
-}
+let mediaRecorder;
+let audioChunks = [];
 
 function startRecording() {
-  document.getElementById('micContainer').classList.add('recording', 'listening');
+  const micBtn = document.querySelector('.mic-btn');
+  micBtn.disabled = true;
+
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      document.getElementById('micContainer').classList.add('recording', 'listening');
+
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+      mediaRecorder.onstop = () => {
+        document.getElementById('micContainer').classList.remove('recording', 'listening');
+        micBtn.disabled = false;
+
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        console.log(`🔊 AudioBlob creado: ${audioBlob.size} bytes`);
+
+        // for debugging: trigger automatic download
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(audioBlob);
+        a.download = 'debug-recording.wav';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        const formData = new FormData();
+        formData.append('audio', audioBlob);
+
+        fetch('/home/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          console.log('📡 Respuesta upload status:', response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log('Transcripción recibida:', data);
+          const transcription = data.transcription || '(sin transcripción)';
+          document.getElementById('detected-word').innerHTML =
+            `Palabra detectada: <strong>${transcription}</strong>`;
+        })
+        .catch(error => {
+          console.error('Error al enviar el archivo o recibir respuesta:', error);
+        });
+      };
+
+      mediaRecorder.start();
+      setTimeout(() => mediaRecorder.stop(), 3000);
+    })
+    .catch(err => {
+      console.error('Error al acceder al micrófono:', err);
+      document.querySelector('.mic-btn').disabled = false;
+    });
 }
 
 function changeTime(amount) {
@@ -22,53 +72,50 @@ function changeTime(amount) {
 
 function formatTime(sec) {
   if (!isFinite(sec) || sec < 0) return '0:00';
-  const m = Math.floor(sec / 60);
-  const s = String(Math.floor(sec % 60)).padStart(2, '0');
+  const m = Math.floor(sec / 60), s = String(Math.floor(sec % 60)).padStart(2, '0');
   return `${m}:${s}`;
+}
+
+function initMockSearch() {
+  fetch('/search?term=Sánchez')
+    .then(res => res.json())
+    .then(data => renderResults(data.results || []))
+    .catch(err => console.error('Error fetch /search:', err));
 }
 
 function renderResults(results) {
   const list = document.querySelector('.audio-list');
-  list.innerHTML = '';
-  if (!results.length) {
-    list.innerHTML = '<p>No se encontraron audios.</p>';
-    return;
-  }
-  results.forEach(r => {
-    const times = (r.menciones || []).map(m => m.start);
-    const div = document.createElement('div');
-    div.className = 'audio-item';
-    div.innerHTML = `
-      <span><strong>${r.filename}</strong></span>
-      <button class="play-btn"
-        onclick='openPlayerModal(
-          "${r.filename}",
-          "${r.filename}",
-          ${JSON.stringify(times)}
-        )'>
-        ▶️
-      </button>
-    `;
-    list.appendChild(div);
-  });
+  list.innerHTML = results.length
+    ? results.map(r => {
+        const times = (r.menciones||[]).map(m=>m.start);
+        return `
+          <div class="audio-item">
+            <span><strong>${r.filename}</strong></span>
+            <button class="play-btn"
+              onclick='openPlayerModal(
+                "${r.filename}",
+                "${r.filename}",
+                ${JSON.stringify(times)}
+              )'>
+              ▶️
+            </button>
+          </div>`;
+      }).join('')
+    : '<p>No se encontraron audios.</p>';
 }
 
 function openPlayerModal(src, title = '', mentions = []) {
-  document.getElementById('player-title').innerText = title || src;
+  document.getElementById('player-title').innerText = title;
   document.getElementById('playerModal').style.display = 'flex';
   isPlaying = false;
   updateTimeInfo();
 
-  // 1) Poblamos el <select> de menciones, restando 2s
   const sel = document.getElementById('mentionSelect');
   sel.innerHTML = `<option value="">— Selecciona —</option>`;
-  const OFFSET = 2; // segundos antes de la mención
+  const OFFSET = 2;
   mentions.forEach(t => {
-    const tAdj = Math.max(0, t - OFFSET);
-    const opt = document.createElement('option');
-    opt.value = tAdj;
-    opt.textContent = formatTime(tAdj);
-    sel.appendChild(opt);
+    const t0 = Math.max(0, t - OFFSET);
+    sel.innerHTML += `<option value="${t0}">${formatTime(t0)}</option>`;
   });
   sel.onchange = () => {
     const v = parseFloat(sel.value);
@@ -79,7 +126,6 @@ function openPlayerModal(src, title = '', mentions = []) {
     }
   };
 
-  // 2) Inicializamos WaveSurfer
   if (wavesurfer) wavesurfer.destroy();
   wavesurfer = WaveSurfer.create({
     container: '#waveform',
@@ -102,7 +148,6 @@ function openPlayerModal(src, title = '', mentions = []) {
 
   const url = src.startsWith('blob:') ? src : `/audio/${src}`;
   wavesurfer.load(url);
-
   wavesurfer.on('ready', updateTimeInfo);
   wavesurfer.on('audioprocess', updateTimeInfo);
   wavesurfer.on('seek', updateTimeInfo);
@@ -123,11 +168,11 @@ function updateTimeInfo() {
 }
 
 function closePlayer() {
-  if (wavesurfer) {
-    wavesurfer.destroy();
-    wavesurfer = null;
-  }
+  if (wavesurfer) { wavesurfer.destroy(); wavesurfer = null; }
   document.getElementById('playerModal').style.display = 'none';
 }
 
-document.addEventListener('DOMContentLoaded', initMockSearch);
+document.addEventListener('DOMContentLoaded', () => {
+  initMockSearch();
+  document.querySelector('.mic-btn').addEventListener('click', startRecording);
+});

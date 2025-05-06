@@ -188,6 +188,7 @@
     width: 90%;
     max-width: 800px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding-bottom: 20px; /* espacio extra */
   }
   .close-btn {
     position: absolute;
@@ -240,21 +241,31 @@
     color: #333;
   }
   
-  /* Paso 1: estilos para la lista de marcas de tiempo */
-  .mention-list {
+  /* Paso final: estilos para el selector de menciones */
+  .mention-container {
     display: flex;
-    flex-direction: column; /* columna vertical */
-    gap: 6px;               /* espacio entre tags */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     margin: 12px 0;
-    max-height: 200px;
-    overflow-y: auto;       /* scroll si hay muchas */
   }
-  .mention-tag {
-    background: #f0f0f0;
+  .mention-container label {
+    font-size: 0.95rem;
+    color: #333;
+  }
+  .mention-select {
     padding: 6px 10px;
     border-radius: 6px;
-    font-size: 0.9rem;
-    color: #333;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .mention-select:focus {
+    outline: none;
+    border-color: #218efc;
+    box-shadow: 0 0 0 2px rgba(33,142,252,0.3);
   }
   
   /* Player controls */
@@ -295,5 +306,14 @@
     color: #555;
     background: #fff;
     border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  /* Responsive */
+  @media (max-width: 480px) {
+    .player-controls,
+    .mention-container {
+      flex-direction: column;
+      gap: 12px;
+    }
   }
   
