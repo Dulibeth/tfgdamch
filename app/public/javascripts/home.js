@@ -24,16 +24,6 @@ function startRecording() {
         micBtn.disabled = false;
 
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        console.log(`🔊 AudioBlob creado: ${audioBlob.size} bytes`);
-
-        // for debugging: trigger automatic download
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(audioBlob);
-        a.download = 'debug-recording.wav';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
         const formData = new FormData();
         formData.append('audio', audioBlob);
 
@@ -41,19 +31,14 @@ function startRecording() {
           method: 'POST',
           body: formData
         })
-        .then(response => {
-          console.log('📡 Respuesta upload status:', response.status);
-          return response.json();
-        })
+        .then(res => res.json())
         .then(data => {
-          console.log('Transcripción recibida:', data);
           const transcription = data.transcription || '(sin transcripción)';
           document.getElementById('detected-word').innerHTML =
             `Palabra detectada: <strong>${transcription}</strong>`;
+          renderResults(data.searchResults || []);
         })
-        .catch(error => {
-          console.error('Error al enviar el archivo o recibir respuesta:', error);
-        });
+        .catch(err => console.error('Error en fetch /home/upload:', err));
       };
 
       mediaRecorder.start();
@@ -76,18 +61,11 @@ function formatTime(sec) {
   return `${m}:${s}`;
 }
 
-function initMockSearch() {
-  fetch('/search?term=Sánchez')
-    .then(res => res.json())
-    .then(data => renderResults(data.results || []))
-    .catch(err => console.error('Error fetch /search:', err));
-}
-
 function renderResults(results) {
   const list = document.querySelector('.audio-list');
   list.innerHTML = results.length
     ? results.map(r => {
-        const times = (r.menciones||[]).map(m=>m.start);
+        const times = (r.menciones || []).map(m => m.start);
         return `
           <div class="audio-item">
             <span><strong>${r.filename}</strong></span>
@@ -168,11 +146,13 @@ function updateTimeInfo() {
 }
 
 function closePlayer() {
-  if (wavesurfer) { wavesurfer.destroy(); wavesurfer = null; }
+  if (wavesurfer) {
+    wavesurfer.destroy();
+    wavesurfer = null;
+  }
   document.getElementById('playerModal').style.display = 'none';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initMockSearch();
   document.querySelector('.mic-btn').addEventListener('click', startRecording);
 });
