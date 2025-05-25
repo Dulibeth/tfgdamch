@@ -19,7 +19,6 @@ router.get('/', async (req, res, next) => {
     await client.connect();
     const coll = client.db('audiofind').collection('transcripciones');
 
-    // Pipeline de búsqueda por palabra y unión con datos de audio via filename
     const pipeline = [
       {
         $search: {
@@ -54,7 +53,6 @@ router.get('/', async (req, res, next) => {
         }
       },
       {
-        // 'lookup' para unir con la colección GridFS 'audios.files' por filename
         $lookup: {
           from: 'audios.files',
           localField: 'filename',
@@ -66,17 +64,17 @@ router.get('/', async (req, res, next) => {
       {
         $project: {
           _id: 0,
-          audioId: '$_id',            // id de la transcripción
-          fileId: '$audioData._id',  // id del chunk en GridFS
-          filename: 1,                // nombre de fichero
-          menciones: 1
+          audioId: '$_id',
+          fileId: '$audioData._id',
+          filename: 1,
+          menciones: 1,
+          mentionCount: { $size: '$menciones' }    
         }
       }
     ];
 
     const results = await coll.aggregate(pipeline).toArray();
     await client.close();
-
     res.json({ term, results });
   } catch (err) {
     next(err);

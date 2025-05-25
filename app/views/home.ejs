@@ -26,8 +26,10 @@
         <img src="/images/microphone.png" alt="Micrófono" class="mic-icon">
       </div>
       <button class="mic-btn" onclick="startRecording()">Decir palabra</button><br>
+
       <div id="detected-word-container" style="margin-top:20px; text-align:center;">
         <p id="detected-word">Palabra detectada: <strong>-</strong></p>
+        <p id="mention-count">Total de menciones: <strong>-</strong></p>  
         <div id="audio-preview-container" style="margin-top:15px;"></div>
       </div>
     </div>
@@ -49,7 +51,6 @@
       <p class="player-artist">AudioFind</p>
 
       <div id="waveform"></div>
-
       <div class="time-display">
         <span id="timeInfo">0:00 / 0:00</span>
       </div>

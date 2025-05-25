@@ -1,5 +1,3 @@
-// public/javascripts/home.js
-
 let wavesurfer;
 const SKIP_SECONDS = 10;
 let isPlaying = false;
@@ -33,9 +31,16 @@ function startRecording() {
         })
         .then(res => res.json())
         .then(data => {
-          const transcription = data.transcription || '(sin transcripción)';
+          const transcription = data.transcription
+            ? data.transcription
+            : 'Palabra no encontrada';
           document.getElementById('detected-word').innerHTML =
             `Palabra detectada: <strong>${transcription}</strong>`;
+
+          const total = (typeof data.totalMentions === 'number') ? data.totalMentions : '-';
+          document.getElementById('mention-count').innerHTML =
+            `Total de menciones: <strong>${total}</strong>`;
+
           renderResults(data.searchResults || []);
         })
         .catch(err => console.error('Error en fetch /home/upload:', err));
@@ -63,23 +68,30 @@ function formatTime(sec) {
 
 function renderResults(results) {
   const list = document.querySelector('.audio-list');
-  list.innerHTML = results.length
-    ? results.map(r => {
-        const times = (r.menciones || []).map(m => m.start);
-        return `
-          <div class="audio-item">
-            <span><strong>${r.filename}</strong></span>
-            <button class="play-btn"
-              onclick='openPlayerModal(
-                "${r.filename}",
-                "${r.filename}",
-                ${JSON.stringify(times)}
-              )'>
-              ▶️
-            </button>
-          </div>`;
-      }).join('')
-    : '<p>No se encontraron audios.</p>';
+  if (!results.length) {
+    list.innerHTML = '<p>No se encontraron audios.</p>';
+    return;
+  }
+
+  list.innerHTML = results.map(r => {
+    const times = (r.menciones || []).map(m => m.start);
+    return `
+      <div class="audio-item">
+        <span class="audio-info">
+          <strong>${r.filename}</strong>
+          <small>(${r.mentionCount} menciones)</small>
+        </span>
+        <button class="play-btn"
+          onclick='openPlayerModal(
+            "${r.filename}",
+            "${r.filename}",
+            ${JSON.stringify(times)}
+          )'>
+          ▶️
+        </button>
+      </div>
+    `;
+  }).join('');
 }
 
 function openPlayerModal(src, title = '', mentions = []) {

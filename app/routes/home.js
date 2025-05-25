@@ -1,4 +1,3 @@
-// routes/home.js
 require('dotenv').config();
 const express   = require('express');
 const multer    = require('multer');
@@ -9,8 +8,7 @@ const router    = express.Router();
 const storage = multer.memoryStorage();
 const upload  = multer({ storage });
 
-const WHISPER_API_URL = process.env.WHISPER_API_URL 
-
+const WHISPER_API_URL = process.env.WHISPER_API_URL;
 console.log('🔑 Whisper URL:', WHISPER_API_URL);
 
 router.get('/', (req, res) => {
@@ -52,11 +50,18 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
       `http://localhost:${process.env.PORT || 3000}/search`,
       { params: { term: transcription } }
     );
-    console.log('Resultados de búsqueda recibidos:', searchRes.data.results.length, 'audios');
+    const results = searchRes.data.results;
+    console.log('Resultados de búsqueda recibidos:', results.length, 'audios');
+
+    const totalMentions = results.reduce(
+      (sum, r) => sum + (r.mentionCount ?? r.menciones.length),
+      0
+    );
 
     return res.json({
       transcription,
-      searchResults: searchRes.data.results
+      totalMentions,         
+      searchResults: results
     });
 
   } catch (err) {
