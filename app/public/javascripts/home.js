@@ -13,56 +13,53 @@ function startRecording() {
     .then(stream => {
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
-      document.getElementById('micContainer').classList.add('recording', 'listening');
+      document.getElementById('micContainer')
+              .classList.add('recording', 'listening');
 
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
       mediaRecorder.onstop = () => {
-        document.getElementById('micContainer').classList.remove('recording', 'listening');
+        document.getElementById('micContainer')
+                .classList.remove('recording', 'listening');
         micBtn.disabled = false;
 
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const formData = new FormData();
+        const formData  = new FormData();
         formData.append('audio', audioBlob);
 
-        fetch('/home/upload', {
-          method: 'POST',
-          body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-          const transcription = data.transcription
-            ? data.transcription
-            : 'Palabra no encontrada';
-          document.getElementById('detected-word').innerHTML =
-            `Palabra detectada: <strong>${transcription}</strong>`;
+        fetch('/home/upload', { method: 'POST', body: formData })
+          .then(r => r.json())
+          .then(data => {
+            const transcription = data.transcription
+              ? data.transcription
+              : 'Palabra no encontrada';
+            document.getElementById('detected-word').innerHTML =
+              `Palabra detectada: <strong>${transcription}</strong>`;
 
-          const total = (typeof data.totalMentions === 'number') ? data.totalMentions : '-';
-          document.getElementById('mention-count').innerHTML =
-            `Total de menciones: <strong>${total}</strong>`;
+            const total = (typeof data.totalMentions === 'number')
+              ? data.totalMentions
+              : '-';
+            document.getElementById('mention-count').innerHTML =
+              `Total de menciones: <strong>${total}</strong>`;
 
-          renderResults(data.searchResults || []);
-        })
-        .catch(err => console.error('Error en fetch /home/upload:', err));
+            renderResults(data.searchResults || []);
+          })
+          .catch(err => console.error('Error en fetch /home/upload:', err));
       };
 
       mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 3000);
+      setTimeout(() => mediaRecorder.stop(), 3000); 
     })
     .catch(err => {
       console.error('Error al acceder al micrófono:', err);
-      document.querySelector('.mic-btn').disabled = false;
+      micBtn.disabled = false;
     });
-}
-
-function changeTime(amount) {
-  const inp = document.getElementById('time-range');
-  inp.value = Math.min(10, Math.max(0, parseInt(inp.value, 10) + amount));
 }
 
 function formatTime(sec) {
   if (!isFinite(sec) || sec < 0) return '0:00';
-  const m = Math.floor(sec / 60), s = String(Math.floor(sec % 60)).padStart(2, '0');
+  const m = Math.floor(sec / 60);
+  const s = String(Math.floor(sec % 60)).padStart(2, '0');
   return `${m}:${s}`;
 }
 
@@ -86,11 +83,8 @@ function renderResults(results) {
             "${r.filename}",
             "${r.filename}",
             ${JSON.stringify(times)}
-          )'>
-          ▶️
-        </button>
-      </div>
-    `;
+          )'>▶️</button>
+      </div>`;
   }).join('');
 }
 
@@ -101,7 +95,7 @@ function openPlayerModal(src, title = '', mentions = []) {
   updateTimeInfo();
 
   const sel = document.getElementById('mentionSelect');
-  sel.innerHTML = `<option value="">— Selecciona —</option>`;
+  sel.innerHTML = '<option value="">— Selecciona —</option>';
   const OFFSET = 2;
   mentions.forEach(t => {
     const t0 = Math.max(0, t - OFFSET);
@@ -118,36 +112,42 @@ function openPlayerModal(src, title = '', mentions = []) {
 
   if (wavesurfer) wavesurfer.destroy();
   wavesurfer = WaveSurfer.create({
-    container: '#waveform',
-    waveColor: '#4a90e2',
+    container:     '#waveform',
+    waveColor:     '#4a90e2',
     progressColor: '#007aff',
-    backend: 'MediaElement',
-    height: 60,
-    barWidth: 2,
-    normalize: true,
-    responsive: true
+    backend:       'MediaElement',
+    height:        60,
+    barWidth:      2,
+    normalize:     true,
+    responsive:    true
   });
+
   wavesurfer.skipBackward = () => {
     const t = Math.max(0, wavesurfer.getCurrentTime() - SKIP_SECONDS);
     wavesurfer.seekTo(t / wavesurfer.getDuration());
   };
   wavesurfer.skipForward = () => {
-    const t = Math.min(wavesurfer.getDuration(), wavesurfer.getCurrentTime() + SKIP_SECONDS);
+    const t = Math.min(wavesurfer.getDuration(),
+                       wavesurfer.getCurrentTime() + SKIP_SECONDS);
     wavesurfer.seekTo(t / wavesurfer.getDuration());
   };
 
   const url = src.startsWith('blob:') ? src : `/audio/${src}`;
   wavesurfer.load(url);
-  wavesurfer.on('ready', updateTimeInfo);
+
+  wavesurfer.once('ready', () => {
+    wavesurfer.setTime ? wavesurfer.setTime(0) : wavesurfer.seekTo(0);
+    updateTimeInfo();
+  });
+
   wavesurfer.on('audioprocess', updateTimeInfo);
-  wavesurfer.on('seek', updateTimeInfo);
+  wavesurfer.on('seek',        updateTimeInfo);
   wavesurfer.on('finish', () => { isPlaying = false; });
 }
 
 function togglePlay() {
   if (!wavesurfer) return;
-  if (isPlaying) wavesurfer.pause();
-  else wavesurfer.play();
+  isPlaying ? wavesurfer.pause() : wavesurfer.play();
   isPlaying = !isPlaying;
 }
 
