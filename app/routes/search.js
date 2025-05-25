@@ -1,20 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient } = require('mongodb');
+
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 router.get('/', async (req, res, next) => {
   try {
-    const term = req.query.term;
-    if (!term) {
+    
+    const termRaw = (req.query.term || '').trim();
+    if (!termRaw) {
       return res.status(400).json({ error: 'Falta el parámetro ?term=' });
     }
+    const term = termRaw;
+    const escapedTerm = escapeRegExp(term);
 
     const uri = process.env.MONGO_URI;
     if (!uri) {
       console.error('Define MONGO_URI en .env');
       return res.status(500).json({ error: 'No hay configuración de Mongo' });
     }
-
     const client = new MongoClient(uri);
     await client.connect();
     const coll = client.db('audiofind').collection('transcripciones');
@@ -34,7 +40,7 @@ router.get('/', async (req, res, next) => {
       {
         $match: {
           'segments.words.text': {
-            $regex: `^${term}$`,
+            $regex: `^${escapedTerm}[\\.,]?$`,
             $options: 'i'
           }
         }
@@ -63,18 +69,19 @@ router.get('/', async (req, res, next) => {
       { $unwind: { path: '$audioData', preserveNullAndEmptyArrays: true } },
       {
         $project: {
-          _id: 0,
-          audioId: '$_id',
-          fileId: '$audioData._id',
-          filename: 1,
+          _id:       0,
+          audioId:   '$_id',
+          fileId:    '$audioData._id',
+          filename:  1,
           menciones: 1,
-          mentionCount: { $size: '$menciones' }    
+          mentionCount: { $size: '$menciones' }
         }
       }
     ];
 
     const results = await coll.aggregate(pipeline).toArray();
     await client.close();
+
     res.json({ term, results });
   } catch (err) {
     next(err);
