@@ -1,8 +1,3 @@
-// scripts/resetAndUploadTranscripts.js
-// Este script vacía la colección `transcripciones` (sin eliminar índices)
-// y vuelve a subir todos los JSON de la carpeta `reco`, añadiendo el campo `filename`
-// que coincide con tus archivos .wav en GridFS.
-
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
 const fs   = require('fs');
@@ -22,11 +17,9 @@ async function main() {
   const db   = client.db('audiofind');
   const coll = db.collection('transcripciones');
 
-  // 1) Vaciar solo los documentos (mantener índices activos)
   console.log('🗑️  Borrando documentos de transcripciones...');
   await coll.deleteMany({});
 
-  // 2) Leer todos los JSON de la carpeta reco/
   const folder = path.resolve(
     "C:\\Users\\Dulibeth\\Desktop\\TFG_Dulibeth\\TFG_Dulibeth\\reco"
   );
@@ -44,7 +37,6 @@ async function main() {
       continue;
     }
 
-    // Añadir filename para hacer lookup con audios.files.filename
     const base = path.basename(file, '.json');
     doc.filename = base + '.wav';
 
