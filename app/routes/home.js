@@ -54,11 +54,11 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
       { params: { term: transcription } }
     );
 
-    const { term, totalMentions, results } = searchRes.data;
+    const { totalMentions, results } = searchRes.data;
     console.log('Resultados de búsqueda recibidos:', results.length, 'audios');
 
     return res.json({
-      transcription: term,
+      transcription: raw,
       totalMentions,
       searchResults: results
     });

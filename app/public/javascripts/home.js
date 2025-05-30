@@ -19,6 +19,7 @@ function startRecording() {
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
       mediaRecorder.onstop = () => {
+        new Audio('/sounds/ding.mp3').play();
         document.getElementById('micContainer')
                 .classList.remove('recording', 'listening');
         micBtn.disabled = false;
@@ -65,27 +66,34 @@ function formatTime(sec) {
 
 function renderResults(results) {
   const list = document.querySelector('.audio-list');
-  if (!results.length) {
-    list.innerHTML = '<p>No se encontraron audios.</p>';
-    return;
-  }
-
-  list.innerHTML = results.map(r => {
-    const times = (r.menciones || []).map(m => m.start);
-    return `
-      <div class="audio-item">
-        <span class="audio-info">
-          <strong>${r.filename}</strong>
-          <small>(${r.mentionCount} menciones)</small>
-        </span>
-        <button class="play-btn"
-          onclick='openPlayerModal(
-            "${r.filename}",
-            "${r.filename}",
-            ${JSON.stringify(times)}
-          )'>▶️</button>
-      </div>`;
-  }).join('');
+  list.innerHTML = `
+    <div class="loading-spinner-container">
+      <div class="loading-spinner"></div>
+      <p style="text-align:center; color:#666;">Cargando resultados...</p>
+    </div>
+  `;
+  setTimeout(() => {
+    if (!results.length) {
+      list.innerHTML = '<p style="text-align:center; color:#999;">No se encontraron audios.</p>';
+      return;
+    }
+    list.innerHTML = results.map(r => {
+      const times = (r.menciones || []).map(m => m.start);
+      return `
+        <div class="audio-item">
+          <span class="audio-info">
+            <strong>${r.filename}</strong>
+            <small>(${r.mentionCount} menciones)</small>
+          </span>
+          <button class="play-btn"
+            onclick='openPlayerModal(
+              "${r.filename}",
+              "${r.filename}",
+              ${JSON.stringify(times)}
+            )'>▶️</button>
+        </div>`;
+    }).join('');
+  }, 300);
 }
 
 function openPlayerModal(src, title = '', mentions = []) {
@@ -136,7 +144,9 @@ function openPlayerModal(src, title = '', mentions = []) {
   wavesurfer.load(url);
 
   wavesurfer.once('ready', () => {
-    wavesurfer.setTime ? wavesurfer.setTime(0) : wavesurfer.seekTo(0);
+    wavesurfer.seekTo(0);
+    wavesurfer.play();
+    isPlaying = true;
     updateTimeInfo();
   });
 
