@@ -97,7 +97,12 @@ function renderResults(results) {
 }
 
 function openPlayerModal(src, title = '', mentions = []) {
-  document.getElementById('player-title').innerText = title;
+  document.getElementById('player-title').innerHTML = `
+    <span style="display:inline-flex; align-items:center; gap:10px;">
+      <span>Cargando audio...</span>
+      <span class="loading-spinner" style="width:16px; height:16px; border-width:3px;"></span>
+    </span>
+  `;
   document.getElementById('playerModal').style.display = 'flex';
   isPlaying = false;
   updateTimeInfo();
@@ -144,6 +149,7 @@ function openPlayerModal(src, title = '', mentions = []) {
   wavesurfer.load(url);
 
   wavesurfer.once('ready', () => {
+    document.getElementById('player-title').innerText = 'Reproduciendo ahora';
     wavesurfer.seekTo(0);
     wavesurfer.play();
     isPlaying = true;
@@ -151,7 +157,7 @@ function openPlayerModal(src, title = '', mentions = []) {
   });
 
   wavesurfer.on('audioprocess', updateTimeInfo);
-  wavesurfer.on('seek',        updateTimeInfo);
+  wavesurfer.on('seek', updateTimeInfo);
   wavesurfer.on('finish', () => { isPlaying = false; });
 }
 
