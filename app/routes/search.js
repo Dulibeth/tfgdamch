@@ -1,4 +1,3 @@
-// routes/search.js
 const express  = require('express');
 const router   = express.Router();
 const { MongoClient } = require('mongodb');
@@ -39,8 +38,8 @@ router.get('/', async (req, res, next) => {
 
     console.log('Regex buscado:', regex);
 
-    const uri = process.env.MONGO_URI;
-    if (!uri) return res.status(500).json({ error: 'No hay MONGO_URI en .env' });
+    const uri = process.env.MONGODB_URI;
+    if (!uri) return res.status(500).json({ error: 'No hay MONGODB_URI en .env' });
 
     const client = new MongoClient(uri);
     await client.connect();

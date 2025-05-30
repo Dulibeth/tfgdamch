@@ -2,9 +2,9 @@ require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
 async function main() {
-  const uri = process.env.MONGO_URI;
+  const uri = process.env.MONGODB_URI;
   if (!uri) {
-    console.error('Define MONGO_URI en tu .env');
+    console.error('Define MONGODB_URI en tu .env');
     process.exit(1);
   }
 

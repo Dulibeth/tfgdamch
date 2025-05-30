@@ -3,7 +3,7 @@ const router  = express.Router();
 const { MongoClient, GridFSBucket } = require('mongodb');
 
 router.get('/:filename', async (req, res, next) => {
-  const uri = process.env.MONGO_URI;
+  const uri = process.env.MONGODB_URI;
   if (!uri) {
     return res.status(500).end('No hay configuración de Mongo');
   }

@@ -6,18 +6,18 @@ const path = require('path');
 async function main() {
   const uri = process.env.MONGO_URI;
   if (!uri) {
-    console.error('⚠️  Define MONGO_URI en .env');
+    console.error('Define MONGO_URI en .env');
     process.exit(1);
   }
 
   const client = new MongoClient(uri, { useUnifiedTopology: true });
   await client.connect();
-  console.log('🔗 Conectado a MongoDB');
+  console.log('Conectado a MongoDB');
 
   const db   = client.db('audiofind');
   const coll = db.collection('transcripciones');
 
-  console.log('🗑️  Borrando documentos de transcripciones...');
+  console.log('Borrando documentos de transcripciones...');
   await coll.deleteMany({});
 
   const folder = path.resolve(
@@ -25,7 +25,7 @@ async function main() {
   );
   const files = fs.readdirSync(folder).filter(f => f.toLowerCase().endsWith('.json'));
 
-  console.log(`📄 Preparando ${files.length} transcripciones para subir...`);
+  console.log(`Preparando ${files.length} transcripciones para subir...`);
 
   for (const file of files) {
     const fullpath = path.join(folder, file);
@@ -33,7 +33,7 @@ async function main() {
     try {
       doc = JSON.parse(fs.readFileSync(fullpath, 'utf8'));
     } catch (err) {
-      console.error(`⚠️  Error parseando ${file}:`, err);
+      console.error(`Error parseando ${file}:`, err);
       continue;
     }
 
@@ -41,14 +41,14 @@ async function main() {
     doc.filename = base + '.wav';
 
     await coll.insertOne(doc);
-    console.log(`✅ Insertado ${file} → filename: ${doc.filename}`);
+    console.log(`Insertado ${file} → filename: ${doc.filename}`);
   }
 
   await client.close();
-  console.log('🎉 Todas las transcripciones han sido re-subidas');
+  console.log('Todas las transcripciones han sido re-subidas');
 }
 
 main().catch(err => {
-  console.error('❌ Error en resetAndUploadTranscripts.js:', err);
+  console.error('Error en resetAndUploadTranscripts.js:', err);
   process.exit(1);
 });

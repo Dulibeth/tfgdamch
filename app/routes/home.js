@@ -1,5 +1,3 @@
-// routes/home.js
-
 require('dotenv').config();
 const express   = require('express');
 const multer    = require('multer');
@@ -45,13 +43,9 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     console.log(' Respuesta de Whisper recibida');
     console.log('   → Whisper raw transcription:', whispRes.data.transcription);
 
-    // 1) Tomamos la transcripción "raw" y la limpiamos de puntuación al inicio/final
-    //    y de caracteres no alfanuméricos (salvo letras acentuadas y espacios)
     const raw = (whispRes.data.transcription || '').trim();
     const transcription = raw
-      // quita signos de puntuación y símbolos al inicio o al final
       .replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, '')
-      // elimina cualquier otro carácter no letra/número/espacio
       .replace(/[^\p{L}0-9ÁÉÍÓÚáéíóúÑñ ]+/gu, '');
 
     console.log(`🔍 Buscando término limpio "${transcription}" en /search…`);
@@ -62,7 +56,6 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     const results = searchRes.data.results;
     console.log('Resultados de búsqueda recibidos:', results.length, 'audios');
 
-    // Sumamos todas las menciones
     const totalMentions = results.reduce(
       (sum, r) => sum + (r.mentionCount ?? r.menciones.length),
       0
