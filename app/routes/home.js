@@ -53,16 +53,12 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
       `http://localhost:${process.env.PORT || 3000}/search`,
       { params: { term: transcription } }
     );
-    const results = searchRes.data.results;
+
+    const { term, totalMentions, results } = searchRes.data;
     console.log('Resultados de búsqueda recibidos:', results.length, 'audios');
 
-    const totalMentions = results.reduce(
-      (sum, r) => sum + (r.mentionCount ?? r.menciones.length),
-      0
-    );
-
     return res.json({
-      transcription,
+      transcription: term,
       totalMentions,
       searchResults: results
     });

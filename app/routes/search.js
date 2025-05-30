@@ -20,22 +20,21 @@ function accentInsensitivePattern(str) {
     .join('');
 }
 
-
 router.get('/', async (req, res, next) => {
   try {
-    
     const termRaw = (req.query.term || '').trim();
     if (!termRaw) {
       return res.status(400).json({ error: 'Falta el parámetro ?term=' });
     }
 
-    const term = termRaw          
+    const term = termRaw
+      .normalize('NFD')                             
+      .replace(/[\u0300-\u036f]/g, '')           
       .replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, '')
-      .replace(/[^\p{L}0-9ÁÉÍÓÚáéíóúÑñ ]+/gu, '');
+      .replace(/[^\p{L}0-9 ]+/gu, '');
 
-    const pat   = accentInsensitivePattern(term);    
-    const regex = new RegExp(`^${pat}[\\.,]?$`, 'i');  
-
+    const pat = accentInsensitivePattern(term);
+    const regex = new RegExp(`^${pat}[\\.,]?$`, 'i');
     console.log('Regex buscado:', regex);
 
     const uri = process.env.MONGODB_URI;
@@ -55,8 +54,8 @@ router.get('/', async (req, res, next) => {
           menciones: {
             $push: {
               palabra: '$segments.words.text',
-              start:   '$segments.words.start',
-              end:     '$segments.words.end'
+              start: '$segments.words.start',
+              end: '$segments.words.end'
             }
           },
           filename: { $first: '$filename' }
@@ -64,20 +63,20 @@ router.get('/', async (req, res, next) => {
       },
       {
         $lookup: {
-          from:         'audios.files',
-          localField:   'filename',
+          from: 'audios.files',
+          localField: 'filename',
           foreignField: 'filename',
-          as:           'audioData'
+          as: 'audioData'
         }
       },
       { $unwind: { path: '$audioData', preserveNullAndEmptyArrays: true } },
       {
         $project: {
-          _id:            0,
-          audioId:        '$_id',
-          fileId:         '$audioData._id',
-          filename:       1,
-          menciones:      1,
+          _id: 0,
+          audioId: '$_id',
+          fileId: '$audioData._id',
+          filename: 1,
+          menciones: 1,
           mentionCount: { $size: '$menciones' }
         }
       }
@@ -86,8 +85,15 @@ router.get('/', async (req, res, next) => {
     const results = await coll.aggregate(pipeline).toArray();
     await client.close();
 
-    res.json({ term, results });
-  } catch (err) { next(err); }
+    const totalMentions = results.reduce(
+      (sum, r) => sum + (r.mentionCount ?? r.menciones.length),
+      0
+    );
+
+    res.json({ term, totalMentions, results });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
