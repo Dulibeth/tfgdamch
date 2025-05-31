@@ -9,14 +9,14 @@ const storage = multer.memoryStorage();
 const upload  = multer({ storage });
 
 const WHISPER_API_URL = process.env.WHISPER_API_URL;
-console.log('🔑 Whisper URL:', WHISPER_API_URL);
+console.log('Whisper URL:', WHISPER_API_URL);
 
 router.get('/', (req, res) => {
-  res.render('home', { title: 'Home' });
+  res.render('index', { title: 'Index' });
 });
 
 router.post('/upload', upload.single('audio'), async (req, res) => {
-  console.log('🛎  POST /home/upload recibido');
+  console.log('🛎  POST /index/upload recibido');
 
   if (!req.file) {
     console.log('No llegó ningún archivo');
@@ -64,7 +64,7 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Error en /home/upload:', err.response?.data || err.message);
+    console.error('Error en /index/upload:', err.response?.data || err.message);
     return res.status(500).json({
       error: 'Error al procesar el audio',
       details: err.response?.data || err.message

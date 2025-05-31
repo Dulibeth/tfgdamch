@@ -33,7 +33,7 @@ function startRecording() {
         const formData = new FormData();
         formData.append('audio', audioBlob);
 
-        fetch('/home/upload', { method: 'POST', body: formData })
+        fetch('/upload', { method: 'POST', body: formData })
           .then(r => r.json())
           .then(data => {
             const transcription = data.transcription ? data.transcription : 'Palabra no encontrada';
@@ -46,7 +46,7 @@ function startRecording() {
 
             renderResults(data.searchResults || []);
           })
-          .catch(err => console.error('Error en fetch /home/upload:', err));
+          .catch(err => console.error('Error en fetch /upload:', err));
       };
 
       mediaRecorder.start();

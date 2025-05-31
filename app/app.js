@@ -5,7 +5,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-const homeRouter = require('./routes/home');
+const indexRouter = require('./routes/index');
 const searchRouter = require('./routes/search');
 const audioRouter = require('./routes/audio');
 
@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', homeRouter);
+app.use('/', indexRouter);
 app.use('/search', searchRouter);
 app.use('/audio', audioRouter);
 
