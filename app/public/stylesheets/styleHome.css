@@ -142,7 +142,7 @@ html, body {
 
 /* Results list */
 .audio-list {
-  max-height: 400px;
+  max-height: 525px;
   overflow-y: auto;
   padding-right: 10px;
 }
