@@ -24,6 +24,14 @@ function startRecording() {
                 .classList.remove('recording', 'listening');
         micBtn.disabled = false;
 
+        // Mostrar spinner inmediatamente después de grabar
+        document.querySelector('.audio-list').innerHTML = `
+          <div class="loading-spinner-container">
+            <div class="loading-spinner"></div>
+            <p style="text-align:center; color:#666;">Cargando resultados...</p>
+          </div>
+        `;
+
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         const formData  = new FormData();
         formData.append('audio', audioBlob);
