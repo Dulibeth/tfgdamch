@@ -317,11 +317,91 @@ html, body {
 }
 
 /* Responsive */
-@media (max-width: 480px) {
-  .player-controls,
-  .mention-container {
+@media (max-width: 768px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .search-card,
+  .results-section {
+    padding: 20px;
+  }
+
+  .mic-container {
+    width: 100px;
+    height: 100px;
+  }
+
+  .mic-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .mic-btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+
+  .audio-list {
+    max-height: 400px;
+  }
+
+  .audio-item {
     flex-direction: column;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .play-btn {
+    align-self: flex-end;
+  }
+
+  .player-content {
+    padding: 20px 30px;
+  }
+
+  .player-title {
+    font-size: 1.2rem;
+  }
+
+  .player-controls {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 20px;
+  }
+
+  .site-name {
+    font-size: 1.2rem;
+  }
+
+  .nav-buttons a {
+    padding: 6px 16px;
+    font-size: 0.9rem;
+  }
+
+  .dashboard {
+    padding: 15px;
+  }
+
+  .search-card,
+  .results-section {
+    padding: 15px;
+  }
+
+  .mic-btn {
+    font-size: 0.9rem;
+  }
+
+  .audio-list {
+    max-height: 300px;
   }
 }
 

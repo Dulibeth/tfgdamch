@@ -13,18 +13,15 @@ function startRecording() {
     .then(stream => {
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
-      document.getElementById('micContainer')
-              .classList.add('recording', 'listening');
+      document.getElementById('micContainer').classList.add('recording', 'listening');
 
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
       mediaRecorder.onstop = () => {
         new Audio('/sounds/ding.mp3').play();
-        document.getElementById('micContainer')
-                .classList.remove('recording', 'listening');
+        document.getElementById('micContainer').classList.remove('recording', 'listening');
         micBtn.disabled = false;
 
-        // Mostrar spinner inmediatamente después de grabar
         document.querySelector('.audio-list').innerHTML = `
           <div class="loading-spinner-container">
             <div class="loading-spinner"></div>
@@ -33,21 +30,17 @@ function startRecording() {
         `;
 
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const formData  = new FormData();
+        const formData = new FormData();
         formData.append('audio', audioBlob);
 
         fetch('/home/upload', { method: 'POST', body: formData })
           .then(r => r.json())
           .then(data => {
-            const transcription = data.transcription
-              ? data.transcription
-              : 'Palabra no encontrada';
+            const transcription = data.transcription ? data.transcription : 'Palabra no encontrada';
             document.getElementById('detected-word').innerHTML =
               `Palabra detectada: <strong>${transcription}</strong>`;
 
-            const total = (typeof data.totalMentions === 'number')
-              ? data.totalMentions
-              : '-';
+            const total = (typeof data.totalMentions === 'number') ? data.totalMentions : '-';
             document.getElementById('mention-count').innerHTML =
               `Total de menciones: <strong>${total}</strong>`;
 
@@ -57,7 +50,7 @@ function startRecording() {
       };
 
       mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 3000); 
+      setTimeout(() => mediaRecorder.stop(), 3000);
     })
     .catch(err => {
       console.error('Error al acceder al micrófono:', err);
@@ -115,6 +108,11 @@ function openPlayerModal(src, title = '', mentions = []) {
   isPlaying = false;
   updateTimeInfo();
 
+  document.getElementById('waveform').style.display = 'none';
+  document.querySelector('.mention-container').style.display = 'none';
+  document.querySelector('.player-controls').style.display = 'none';
+  document.querySelector('.time-display').style.display = 'none';
+
   const sel = document.getElementById('mentionSelect');
   sel.innerHTML = '<option value="">— Selecciona —</option>';
   const OFFSET = 2;
@@ -133,14 +131,14 @@ function openPlayerModal(src, title = '', mentions = []) {
 
   if (wavesurfer) wavesurfer.destroy();
   wavesurfer = WaveSurfer.create({
-    container:     '#waveform',
-    waveColor:     '#4a90e2',
+    container: '#waveform',
+    waveColor: '#4a90e2',
     progressColor: '#007aff',
-    backend:       'MediaElement',
-    height:        60,
-    barWidth:      2,
-    normalize:     true,
-    responsive:    true
+    backend: 'MediaElement',
+    height: 60,
+    barWidth: 2,
+    normalize: true,
+    responsive: true
   });
 
   wavesurfer.skipBackward = () => {
@@ -148,8 +146,7 @@ function openPlayerModal(src, title = '', mentions = []) {
     wavesurfer.seekTo(t / wavesurfer.getDuration());
   };
   wavesurfer.skipForward = () => {
-    const t = Math.min(wavesurfer.getDuration(),
-                       wavesurfer.getCurrentTime() + SKIP_SECONDS);
+    const t = Math.min(wavesurfer.getDuration(), wavesurfer.getCurrentTime() + SKIP_SECONDS);
     wavesurfer.seekTo(t / wavesurfer.getDuration());
   };
 
@@ -157,11 +154,16 @@ function openPlayerModal(src, title = '', mentions = []) {
   wavesurfer.load(url);
 
   wavesurfer.once('ready', () => {
-    document.getElementById('player-title').innerText = 'Reproduciendo ahora';
+    document.getElementById('player-title').innerText = title;
     wavesurfer.seekTo(0);
     wavesurfer.play();
     isPlaying = true;
     updateTimeInfo();
+
+    document.getElementById('waveform').style.display = 'block';
+    document.querySelector('.mention-container').style.display = 'block';
+    document.querySelector('.player-controls').style.display = 'flex';
+    document.querySelector('.time-display').style.display = 'block';
   });
 
   wavesurfer.on('audioprocess', updateTimeInfo);
