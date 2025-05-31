@@ -20,11 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req, res) => {
-  res.redirect('/home');
-});
-
-app.use('/home', homeRouter);
+app.use('/', homeRouter);
 app.use('/search', searchRouter);
 app.use('/audio', audioRouter);
 
