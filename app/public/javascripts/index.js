@@ -1,7 +1,6 @@
 let wavesurfer;
 const SKIP_SECONDS = 10;
 let isPlaying = false;
-
 let mediaRecorder;
 let audioChunks = [];
 
@@ -13,40 +12,37 @@ function startRecording() {
     .then(stream => {
       mediaRecorder = new MediaRecorder(stream);
       audioChunks = [];
-      document.getElementById('micContainer').classList.add('recording', 'listening');
+      document.getElementById('micContainer')
+        .classList.add('recording', 'listening');
 
       mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
 
       mediaRecorder.onstop = () => {
         new Audio('/sounds/ding.mp3').play();
-        document.getElementById('micContainer').classList.remove('recording', 'listening');
+        document.getElementById('micContainer')
+          .classList.remove('recording', 'listening');
         micBtn.disabled = false;
 
-        document.querySelector('.audio-list').innerHTML = `
-          <div class="loading-spinner-container">
-            <div class="loading-spinner"></div>
-            <p style="text-align:center; color:#666;">Cargando resultados...</p>
-          </div>
-        `;
+        showLoadingSpinner('.audio-list');
 
         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const formData = new FormData();
+        const formData  = new FormData();
         formData.append('audio', audioBlob);
-
-        fetch('/upload', { method: 'POST', body: formData })
+        fetch('/analyze', { method: 'POST', body: formData })
           .then(r => r.json())
           .then(data => {
-            const transcription = data.transcription ? data.transcription : 'Palabra no encontrada';
+            const palabra = data.word || 'Palabra no encontrada';
             document.getElementById('detected-word').innerHTML =
-              `Palabra detectada: <strong>${transcription}</strong>`;
+              `Palabra detectada: <strong>${palabra}</strong>`;
 
-            const total = (typeof data.totalMentions === 'number') ? data.totalMentions : '-';
+            const total = Number.isFinite(data.totalMentions)
+              ? data.totalMentions : '-';
             document.getElementById('mention-count').innerHTML =
               `Total de menciones: <strong>${total}</strong>`;
 
-            renderResults(data.searchResults || []);
+            renderResults(data.matches || []);
           })
-          .catch(err => console.error('Error en fetch /upload:', err));
+          .catch(err => console.error('Error en fetch /analyze:', err));
       };
 
       mediaRecorder.start();
@@ -56,6 +52,13 @@ function startRecording() {
       console.error('Error al acceder al micrófono:', err);
       micBtn.disabled = false;
     });
+}
+function showLoadingSpinner(selector) {
+  document.querySelector(selector).innerHTML = `
+    <div class="loading-spinner-container">
+      <div class="loading-spinner"></div>
+      <p style="text-align:center; color:#666;">Cargando resultados...</p>
+    </div>`;
 }
 
 function formatTime(sec) {
@@ -67,28 +70,26 @@ function formatTime(sec) {
 
 function renderResults(results) {
   const list = document.querySelector('.audio-list');
-  list.innerHTML = `
-    <div class="loading-spinner-container">
-      <div class="loading-spinner"></div>
-      <p style="text-align:center; color:#666;">Cargando resultados...</p>
-    </div>
-  `;
+  showLoadingSpinner('.audio-list');
+
   setTimeout(() => {
     if (!results.length) {
-      list.innerHTML = '<p style="text-align:center; color:#999;">No se encontraron audios.</p>';
+      list.innerHTML =
+        '<p style="text-align:center; color:#999;">No se encontraron audios.</p>';
       return;
     }
+
     list.innerHTML = results.map(r => {
       const times = (r.menciones || []).map(m => m.start);
       return `
         <div class="audio-item">
           <span class="audio-info">
             <strong>${r.filename}</strong>
-            <small>(${r.mentionCount} menciones)</small>
+            <small>(${r.mentionCount ?? times.length} menciones)</small>
           </span>
           <button class="play-btn"
             onclick='openPlayerModal(
-              "${r.filename}",
+              "${r.url}",                /* ← URL lista del backend */
               "${r.filename}",
               ${JSON.stringify(times)}
             )'>▶️</button>
@@ -101,17 +102,15 @@ function openPlayerModal(src, title = '', mentions = []) {
   document.getElementById('player-title').innerHTML = `
     <span style="display:inline-flex; align-items:center; gap:10px;">
       <span>Cargando audio...</span>
-      <span class="loading-spinner" style="width:16px; height:16px; border-width:3px;"></span>
-    </span>
-  `;
+      <span class="loading-spinner"
+            style="width:16px; height:16px; border-width:3px;"></span>
+    </span>`;
   document.getElementById('playerModal').style.display = 'flex';
   isPlaying = false;
   updateTimeInfo();
 
-  document.getElementById('waveform').style.display = 'none';
-  document.querySelector('.mention-container').style.display = 'none';
-  document.querySelector('.player-controls').style.display = 'none';
-  document.querySelector('.time-display').style.display = 'none';
+  ['#waveform','.mention-container','.player-controls','.time-display']
+    .forEach(sel => document.querySelector(sel).style.display = 'none');
 
   const sel = document.getElementById('mentionSelect');
   sel.innerHTML = '<option value="">— Selecciona —</option>';
@@ -146,11 +145,14 @@ function openPlayerModal(src, title = '', mentions = []) {
     wavesurfer.seekTo(t / wavesurfer.getDuration());
   };
   wavesurfer.skipForward = () => {
-    const t = Math.min(wavesurfer.getDuration(), wavesurfer.getCurrentTime() + SKIP_SECONDS);
+    const t = Math.min(
+      wavesurfer.getDuration(),
+      wavesurfer.getCurrentTime() + SKIP_SECONDS
+    );
     wavesurfer.seekTo(t / wavesurfer.getDuration());
   };
 
-  const url = src.startsWith('blob:') ? src : `/audio/${src}`;
+  const url = src.startsWith('blob:') ? src : src;
   wavesurfer.load(url);
 
   wavesurfer.once('ready', () => {
@@ -160,10 +162,8 @@ function openPlayerModal(src, title = '', mentions = []) {
     isPlaying = true;
     updateTimeInfo();
 
-    document.getElementById('waveform').style.display = 'block';
-    document.querySelector('.mention-container').style.display = 'block';
-    document.querySelector('.player-controls').style.display = 'flex';
-    document.querySelector('.time-display').style.display = 'block';
+    ['#waveform','.mention-container','.player-controls','.time-display']
+      .forEach(sel => document.querySelector(sel).style.display = '');
   });
 
   wavesurfer.on('audioprocess', updateTimeInfo);
